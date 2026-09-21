@@ -199,6 +199,7 @@ ghcr.io/<GitHub用户名或组织名>/<仓库名>
 | 音频文件 | 语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp |
 | 文本文件 | txt 格式，最大 500KB |
 | 参数范围 | speed 0.5-2.0，pitch -50~50（整数），volume -100~100（整数） |
+| Markdown 清洗 | 自动去除 Markdown 标记（标题、粗体、代码围栏、LaTeX 公式符号等），保留正文内容朗读 |
 
 ## 开发
 

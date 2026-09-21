@@ -658,6 +658,88 @@ describe("SSML 音量值", () => {
   });
 });
 
+// =========== Markdown 清洗 ===========
+
+function mockTtsCapture() {
+  let captured = null;
+  globalThis.fetch = async (url, opts) => {
+    const u = String(url);
+    if (u.includes("microsofttranslator.com"))
+      return new Response(TOKEN_RESP, { status: 200, headers: { "Content-Type": "application/json" } });
+    if (u.includes("tts.speech.microsoft.com")) {
+      captured = typeof opts?.body === "string" ? opts.body : await new Response(opts?.body).text();
+      return new Response(new Blob([AUDIO]), { status: 200 });
+    }
+    return originalFetch(url);
+  };
+  return () => captured;
+}
+
+describe("Markdown 清洗", () => {
+  it("标题和粗体标记被去除，正文保留", async () => {
+    const getCaptured = mockTtsCapture();
+    await postSpeech({ input: "### 标题内容\n**粗体文字**普通文字", voice: "alloy" });
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(ssml.includes("标题内容"), "标题正文应保留");
+    assert.ok(ssml.includes("粗体文字"), "粗体正文应保留");
+    assert.ok(ssml.includes("普通文字"), "普通文字应保留");
+    assert.ok(!ssml.includes("###"), "### 标记应被去除");
+    assert.ok(!ssml.includes("**"), "** 标记应被去除");
+  });
+
+  it("代码块围栏去除，内容保留", async () => {
+    const getCaptured = mockTtsCapture();
+    await postSpeech({ input: "前文\n```js\nconsole.log(1)\n```\n后文", voice: "alloy" });
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(ssml.includes("前文"));
+    assert.ok(ssml.includes("后文"));
+    assert.ok(!ssml.includes("```"));
+  });
+
+  it("LaTeX 行内公式去除定界符，内容保留", async () => {
+    const getCaptured = mockTtsCapture();
+    await postSpeech({ input: "当 $M>0$ 时成立", voice: "alloy" });
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(!ssml.includes("$"), "$ 定界符应被去除");
+    assert.ok(ssml.includes("M"), "公式变量应保留");
+    assert.ok(ssml.includes("成立"), "正文应保留");
+  });
+
+  it("LaTeX 命令转可读中文", async () => {
+    const getCaptured = mockTtsCapture();
+    await postSpeech({ input: "$\\frac{1}{2}$加$\\sqrt{x}$", voice: "alloy" });
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(ssml.includes("分之"), "\\frac 应转为分之");
+    assert.ok(ssml.includes("平方根"), "\\sqrt 应转为平方根");
+  });
+
+  it("纯文本保持不变", async () => {
+    const getCaptured = mockTtsCapture();
+    await postSpeech({ input: "这是一段普通文本，没有任何格式。", voice: "alloy" });
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(ssml.includes("这是一段普通文本，没有任何格式。"));
+  });
+
+  it("FormData 路径也应用清洗", async () => {
+    const getCaptured = mockTtsCapture();
+    await multipartPost("/v1/audio/speech", [
+      ["file", Buffer.from("### 标题\n**加粗**"), "t.txt", "text/plain"],
+      ["voice", "zh-CN-XiaoxiaoNeural"],
+    ]);
+    const ssml = getCaptured();
+    assert.ok(ssml);
+    assert.ok(ssml.includes("标题"));
+    assert.ok(ssml.includes("加粗"));
+    assert.ok(!ssml.includes("###"));
+    assert.ok(!ssml.includes("**"));
+  });
+});
+
 // =========== 并发控制 ===========
 
 describe("并发控制", () => {

@@ -1,3 +1,5 @@
+import removeMarkdown from "remove-markdown";
+
 const TOKEN_REFRESH_BEFORE_EXPIRY = 3 * 60;
 const VOICE_ALIASES = {
     alloy: "zh-CN-XiaoxiaoNeural",
@@ -517,6 +519,7 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
           <tr><td>请求体大小</td><td>最大 11MB，超出返回 <code>413</code></td></tr>
           <tr><td>音频文件</td><td>语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp</td></tr>
           <tr><td>文本文件</td><td>txt 格式，最大 500KB</td></tr>
+          <tr><td>Markdown 清洗</td><td>自动去除 Markdown 标记（标题、粗体、代码围栏、LaTeX 公式符号等），保留正文内容朗读</td></tr>
         </tbody>
       </table>
     </div>
@@ -1031,12 +1034,45 @@ function releaseConcurrency(apiKey) {
     else concurrencyByKey.set(key, current - 1);
 }
 
+function latexToReadable(expr) {
+    return expr
+        .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, "$2分之$1")
+        .replace(/\\sqrt\{([^}]*)\}/g, "$1的平方根")
+        .replace(/\\sum/g, "求和").replace(/\\prod/g, "求积").replace(/\\int/g, "积分")
+        .replace(/\\infty/g, "无穷").replace(/\\pi/g, "π")
+        .replace(/\\alpha/g, "α").replace(/\\beta/g, "β").replace(/\\gamma/g, "γ")
+        .replace(/\\delta/g, "δ").replace(/\\theta/g, "θ").replace(/\\lambda/g, "λ")
+        .replace(/\\mu/g, "μ").replace(/\\sigma/g, "σ").replace(/\\omega/g, "ω")
+        .replace(/\\geq?/g, "大于等于").replace(/\\leq?/g, "小于等于")
+        .replace(/\\neq?/g, "不等于").replace(/\\approx/g, "约等于")
+        .replace(/\\times/g, "乘以").replace(/\\div/g, "除以")
+        .replace(/\\pm/g, "正负").replace(/\\cdot/g, "·")
+        .replace(/\\ldots|\\cdots/g, "…")
+        .replace(/\\(?:left|right|Big|big)[(.)|[\]{}]?/g, "")
+        .replace(/\^{([^}]*)}/g, "的$1次方").replace(/\^(\w)/g, "的$1次方")
+        .replace(/_{([^}]*)}/g, "$1").replace(/_(\w)/g, "$1")
+        .replace(/[\\{}]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function stripMarkdown(text) {
+    try {
+        let result = text
+            .replace(/\$\$([\s\S]*?)\$\$/g, (_, e) => latexToReadable(e))
+            .replace(/\$([^$]+)\$/g, (_, e) => latexToReadable(e));
+        result = removeMarkdown(result, { stripListLeaders: true, gfm: true, useImgAltText: true });
+        return result.replace(/\n{3,}/g, "\n\n").trim();
+    } catch (err) {
+        console.error("Markdown清洗失败，使用原文:", err);
+        return text;
+    }
+}
+
 async function getVoice(text, voiceName = "zh-CN-XiaoxiaoNeural", rate = '+0%', pitch = '+0Hz', volume = '+0%', style = "general", outputFormat = "audio-24khz-48kbitrate-mono-mp3", apiKey = null) {
     if (!acquireConcurrency(apiKey)) {
         return errorResponse(429, "too_many_requests", "并发请求过多，请稍后再试");
     }
     try {
-        const cleanText = text.trim();
+        const cleanText = stripMarkdown(text.trim());
         if (!cleanText) {
             throw new Error("文本内容为空");
         }

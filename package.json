@@ -11,5 +11,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "remove-markdown": "^0.7.0"
   }
 }
