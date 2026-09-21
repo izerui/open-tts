@@ -189,19 +189,33 @@ docker buildx build \
 ghcr.io/<GitHub用户名或组织名>/<仓库名>
 ```
 
+## 使用限制
+
+| 限制项 | 说明 |
+|--------|------|
+| 每 Key TTS 并发 | 每个 API Key 最多同时处理 10 个 TTS 请求，超出返回 `429` |
+| 文本长度 | 单次请求最大 10,000 字符 |
+| 请求体大小 | 最大 11MB，超出返回 `413` |
+| 音频文件 | 语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp |
+| 文本文件 | txt 格式，最大 500KB |
+| 参数范围 | speed 0.5-2.0，pitch -50~50（整数），volume -100~100（整数） |
+
 ## 开发
 
 - 修改网页、TTS 参数或合成逻辑：编辑 `index.js`。
 - 修改 HTTP 服务、鉴权或健康检查：编辑 `server.mjs`。
 - 修改默认 API Key：编辑 `Dockerfile` 中的 `API_KEY`。
+- 配置多 API Key：设置 `API_KEYS` 环境变量（逗号分隔）。
 - 配置默认语音转文字 Token：设置 `SILICONFLOW_API_KEY` 环境变量。
+- 配置 CORS 允许来源：设置 `CORS_ORIGIN` 环境变量，默认 `*`。
 - 检查 JavaScript 语法：运行 `npm run check`。
+- 运行测试：`npm test`。
 
 当前输出格式固定为 MP3。
 
 ## 安全提示
 
-默认 Key 是公开固定值，只适合测试或受信任网络。公网部署应通过环境变量更换，并在入口增加限流、访问日志和调用配额。
+默认 Key 是公开固定值，只适合测试或受信任网络。公网部署建议通过 `API_KEYS` 配置独立 Key。每个 Key 有独立的并发配额，互不影响。
 
 ## License
 

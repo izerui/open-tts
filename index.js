@@ -507,6 +507,20 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
       </table>
     </div>
 
+    <div class="code-sec">
+      <h3>使用限制</h3>
+      <table class="api-tbl">
+        <thead><tr><th>限制项</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>每 Key TTS 并发</td><td>每个 API Key 最多同时处理 10 个 TTS 请求，超出返回 <code>429</code></td></tr>
+          <tr><td>文本长度</td><td>单次请求最大 10,000 字符</td></tr>
+          <tr><td>请求体大小</td><td>最大 11MB，超出返回 <code>413</code></td></tr>
+          <tr><td>音频文件</td><td>语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp</td></tr>
+          <tr><td>文本文件</td><td>txt 格式，最大 500KB</td></tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 
