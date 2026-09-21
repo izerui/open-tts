@@ -68,6 +68,20 @@ docker run --rm \
   open-tts:latest
 ```
 
+### 多 API Key
+
+使用 `API_KEYS` 环境变量配置多个 Key，逗号分隔。每个 Key 独立计算并发上限（最多 10 个 TTS 并发）：
+
+```bash
+docker run --rm \
+  -p 8787:8787 \
+  -e API_KEYS=sk-my-private-key,sk-shared-public-key \
+  -e SILICONFLOW_API_KEY=your-siliconflow-key \
+  open-tts:latest
+```
+
+`API_KEYS` 优先于 `API_KEY`。未设置 `API_KEYS` 时回退到单个 `API_KEY`。
+
 ## 调用接口
 
 ```bash

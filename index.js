@@ -20,6 +20,69 @@ const VOICES = [
     "zh-CN-YunjianNeural", "zh-CN-YunfengNeural", "zh-CN-YunhaoNeural",
     "zh-CN-YunxiaNeural", "zh-CN-YunyeNeural", "zh-CN-YunzeNeural"
 ];
+const VALID_STYLES = new Set([
+    "general", "assistant", "chat", "customerservice", "newscast",
+    "affectionate", "calm", "cheerful", "gentle", "lyrical", "serious"
+]);
+const VALID_VOICES = new Set([...VOICES, ...Object.keys(VOICE_ALIASES)]);
+const MAX_INPUT_LENGTH = 10_000;
+
+const DECIMAL_RE = /^-?(?:\d+\.?\d*|\.\d+)$/;
+const INTEGER_RE = /^-?\d+$/;
+
+function toStrictNumber(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : NaN;
+    if (typeof value !== "string") return NaN;
+    const s = value.trim();
+    if (!DECIMAL_RE.test(s)) return NaN;
+    return Number(s);
+}
+
+function toStrictInt(value) {
+    if (typeof value === "number") return Number.isFinite(value) && Number.isInteger(value) ? value : NaN;
+    if (typeof value !== "string") return NaN;
+    const s = value.trim();
+    if (!INTEGER_RE.test(s)) return NaN;
+    return Number(s);
+}
+
+function validateTtsParams(input, voice, speed, pitch, volume, style) {
+    if (typeof input !== "string" || !input.trim()) {
+        return { status: 400, code: "invalid_input", message: "input 必须为非空字符串" };
+    }
+    if (input.length > MAX_INPUT_LENGTH) {
+        return { status: 413, code: "input_too_long", message: `input 长度不能超过 ${MAX_INPUT_LENGTH} 字符` };
+    }
+    if (typeof voice !== "string" || !VALID_VOICES.has(voice)) {
+        return { status: 400, code: "invalid_voice", message: `不支持的语音: ${voice}` };
+    }
+    const numSpeed = toStrictNumber(speed);
+    if (Number.isNaN(numSpeed) || numSpeed < 0.5 || numSpeed > 2.0) {
+        return { status: 400, code: "invalid_speed", message: "speed 必须在 0.5 - 2.0 之间" };
+    }
+    const numPitch = toStrictInt(pitch);
+    if (Number.isNaN(numPitch) || numPitch < -50 || numPitch > 50) {
+        return { status: 400, code: "invalid_pitch", message: "pitch 必须为整数，范围 -50 到 50" };
+    }
+    const numVolume = toStrictInt(volume);
+    if (Number.isNaN(numVolume) || numVolume < -100 || numVolume > 100) {
+        return { status: 400, code: "invalid_volume", message: "volume 必须为整数，范围 -100 到 100" };
+    }
+    if (typeof style !== "string" || !VALID_STYLES.has(style)) {
+        return { status: 400, code: "invalid_style", message: `不支持的风格: ${style}` };
+    }
+    return null;
+}
+
+function errorResponse(status, code, message) {
+    return new Response(JSON.stringify({
+        error: { message, type: "invalid_request_error", param: null, code }
+    }), {
+        status,
+        headers: { "Content-Type": "application/json", ...makeCORSHeaders() }
+    });
+}
+
 let tokenInfo = {
     endpoint: null,
     token: null,
@@ -438,7 +501,7 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
           <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
           <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
           <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
-          <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量调节</td></tr>
+          <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量百分比 (-100 到 100)</td></tr>
           <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
         </tbody>
       </table>
@@ -699,6 +762,8 @@ export default {
 };
 
 async function handleRequest(request, env = {}) {
+    _corsOrigin = env.CORS_ORIGIN || "*";
+
     if (request.method === "OPTIONS") {
         return handleOptions(request);
     }
@@ -741,7 +806,10 @@ async function handleRequest(request, env = {}) {
         }
     }
 
-    if (path === "/v1/models" && request.method === "GET") {
+    if (path === "/v1/models" && request.method !== "GET") {
+        return errorResponse(405, "method_not_allowed", "只支持 GET 方法");
+    }
+    if (path === "/v1/models") {
         return new Response(JSON.stringify({
             object: "list",
             data: [{
@@ -758,7 +826,10 @@ async function handleRequest(request, env = {}) {
         });
     }
 
-    if (path === "/v1/audio/voices" && request.method === "GET") {
+    if (path === "/v1/audio/voices" && request.method !== "GET") {
+        return errorResponse(405, "method_not_allowed", "只支持 GET 方法");
+    }
+    if (path === "/v1/audio/voices") {
         return new Response(JSON.stringify({
             object: "list",
             data: VOICES.map(id => ({ id, object: "voice" })),
@@ -772,16 +843,28 @@ async function handleRequest(request, env = {}) {
     }
 
     if (path === "/v1/audio/speech") {
+        if (request.method !== "POST") {
+            return errorResponse(405, "method_not_allowed", "只支持 POST 方法");
+        }
+        const callerKey = request.headers.get("x-authenticated-key") || null;
         try {
             const contentType = request.headers.get("content-type") || "";
-            
-            // 处理文件上传
+
             if (contentType.includes("multipart/form-data")) {
-                return await handleFileUpload(request);
+                return await handleFileUpload(request, callerKey);
             }
-            
-            // 处理JSON请求（原有功能）
-            const requestBody = await request.json();
+
+            let requestBody;
+            try {
+                requestBody = await request.json();
+            } catch {
+                return errorResponse(400, "invalid_json", "请求体不是有效的 JSON");
+            }
+
+            if (!requestBody || typeof requestBody !== "object") {
+                return errorResponse(400, "invalid_json", "请求体必须为 JSON 对象");
+            }
+
             const {
                 input,
                 voice: requestedVoice = "zh-CN-XiaoxiaoNeural",
@@ -791,10 +874,15 @@ async function handleRequest(request, env = {}) {
                 style = "general"
             } = requestBody;
 
+            const validationError = validateTtsParams(input, requestedVoice, speed, pitch, volume, style);
+            if (validationError) {
+                return errorResponse(validationError.status, validationError.code, validationError.message);
+            }
+
             const voice = VOICE_ALIASES[requestedVoice] || requestedVoice;
-            let rate = parseInt(String((parseFloat(speed) - 1.0) * 100));
-            let numVolume = parseInt(String(parseFloat(volume) * 100));
-            let numPitch = parseInt(pitch);
+            let rate = Math.trunc((parseFloat(speed) - 1.0) * 100);
+            let numVolume = parseInt(volume, 10);
+            let numPitch = parseInt(pitch, 10);
             const response = await getVoice(
                 input,
                 voice,
@@ -802,27 +890,15 @@ async function handleRequest(request, env = {}) {
                 numPitch >= 0 ? `+${numPitch}Hz` : `${numPitch}Hz`,
                 numVolume >= 0 ? `+${numVolume}%` : `${numVolume}%`,
                 style,
-                "audio-24khz-48kbitrate-mono-mp3"
+                "audio-24khz-48kbitrate-mono-mp3",
+                callerKey
             );
 
             return response;
 
         } catch (error) {
             console.error("Error:", error);
-            return new Response(JSON.stringify({
-                error: {
-                    message: error.message,
-                    type: "api_error",
-                    param: null,
-                    code: "edge_tts_error"
-                }
-            }), {
-                status: 500,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+            return errorResponse(500, "edge_tts_error", error.message);
         }
     }
 
@@ -923,15 +999,34 @@ async function processBatchedAudioChunks(chunks, voiceName, rate, pitch, volume,
     return audioChunks;
 }
 
-async function getVoice(text, voiceName = "zh-CN-XiaoxiaoNeural", rate = '+0%', pitch = '+0Hz', volume = '+0%', style = "general", outputFormat = "audio-24khz-48kbitrate-mono-mp3") {
+const MAX_CONCURRENT_PER_KEY = 10;
+const concurrencyByKey = new Map();
+
+function acquireConcurrency(apiKey) {
+    const key = apiKey || "__anonymous__";
+    const current = concurrencyByKey.get(key) || 0;
+    if (current >= MAX_CONCURRENT_PER_KEY) return false;
+    concurrencyByKey.set(key, current + 1);
+    return true;
+}
+
+function releaseConcurrency(apiKey) {
+    const key = apiKey || "__anonymous__";
+    const current = concurrencyByKey.get(key) || 0;
+    if (current <= 1) concurrencyByKey.delete(key);
+    else concurrencyByKey.set(key, current - 1);
+}
+
+async function getVoice(text, voiceName = "zh-CN-XiaoxiaoNeural", rate = '+0%', pitch = '+0Hz', volume = '+0%', style = "general", outputFormat = "audio-24khz-48kbitrate-mono-mp3", apiKey = null) {
+    if (!acquireConcurrency(apiKey)) {
+        return errorResponse(429, "too_many_requests", "并发请求过多，请稍后再试");
+    }
     try {
-        // 文本预处理
         const cleanText = text.trim();
         if (!cleanText) {
             throw new Error("文本内容为空");
         }
-        
-        // 如果文本很短，直接处理
+
         if (cleanText.length <= 1500) {
             const audioBlob = await getAudioChunk(cleanText, voiceName, rate, pitch, volume, style, outputFormat);
             return new Response(audioBlob, {
@@ -942,12 +1037,10 @@ async function getVoice(text, voiceName = "zh-CN-XiaoxiaoNeural", rate = '+0%', 
             });
         }
 
-        // 优化的文本分块
         const chunks = optimizedTextSplit(cleanText, 1500);
-        
-        // 限制单次请求的分块数量，避免产生过多上游请求
+
         if (chunks.length > 40) {
-            throw new Error(`文本过长，分块数量(${chunks.length})超过限制。请缩短文本或分批处理。`);
+            return errorResponse(413, "input_too_long", `文本过长，分块数量(${chunks.length})超过限制(40)，请缩短文本`);
         }
         
         console.log(`文本已分为 ${chunks.length} 个块进行处理`);
@@ -976,20 +1069,9 @@ async function getVoice(text, voiceName = "zh-CN-XiaoxiaoNeural", rate = '+0%', 
 
     } catch (error) {
         console.error("语音合成失败:", error);
-        return new Response(JSON.stringify({
-            error: {
-                message: error.message || String(error),
-                type: "api_error",
-                param: `${voiceName}, ${rate}, ${pitch}, ${volume}, ${style}, ${outputFormat}`,
-                code: "edge_tts_error"
-            }
-        }), {
-            status: 500,
-            headers: {
-                "Content-Type": "application/json",
-                ...makeCORSHeaders()
-            }
-        });
+        return errorResponse(500, "edge_tts_error", error.message || String(error));
+    } finally {
+        releaseConcurrency(apiKey);
     }
 }
 
@@ -1029,7 +1111,8 @@ async function getAudioChunk(text, voiceName, rate, pitch, volume, style, output
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
                     "X-Microsoft-OutputFormat": outputFormat
                 },
-                body: getSsml(text, voiceName, rate, pitch, volume, style, slien)
+                body: getSsml(text, voiceName, rate, pitch, volume, style, slien),
+                signal: AbortSignal.timeout(30_000)
             });
 
             if (!response.ok) {
@@ -1108,6 +1191,8 @@ function getSsml(text, voiceName, rate, pitch, volume, style, slien = 0) {
 
 }
 
+let refreshPromise = null;
+
 async function getEndpoint() {
     const now = Date.now() / 1000;
 
@@ -1115,61 +1200,72 @@ async function getEndpoint() {
         return tokenInfo.endpoint;
     }
 
-    // 获取新token
-    const endpointUrl = "https://dev.microsofttranslator.com/apps/endpoint?api-version=1.0";
-    const clientId = crypto.randomUUID().replace(/-/g, "");
-
-    try {
-        const response = await fetch(endpointUrl, {
-            method: "POST",
-            headers: {
-                "Accept-Language": "zh-Hans",
-                "X-ClientVersion": "4.0.530a 5fe1dc6c",
-                "X-UserId": "0f04d16a175c411e",
-                "X-HomeGeographicRegion": "zh-Hans-CN",
-                "X-ClientTraceId": clientId,
-                "X-MT-Signature": await sign(endpointUrl),
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
-                "Content-Type": "application/json; charset=utf-8",
-                "Content-Length": "0",
-                "Accept-Encoding": "gzip"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`获取endpoint失败: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const jwt = data.t.split(".")[1];
-        const decodedJwt = JSON.parse(atob(jwt));
-
-        tokenInfo = {
-            endpoint: data,
-            token: data.t,
-            expiredAt: decodedJwt.exp
-        };
-
-        return data;
-
-    } catch (error) {
-        console.error("获取endpoint失败:", error);
-        // 如果有缓存的token，即使过期也尝试使用
-        if (tokenInfo.token) {
-            console.log("使用过期的缓存token");
-            return tokenInfo.endpoint;
-        }
-        throw error;
+    if (refreshPromise) {
+        return refreshPromise;
     }
+
+    refreshPromise = (async () => {
+        const endpointUrl = "https://dev.microsofttranslator.com/apps/endpoint?api-version=1.0";
+        const clientId = crypto.randomUUID().replace(/-/g, "");
+
+        try {
+            const response = await fetch(endpointUrl, {
+                method: "POST",
+                headers: {
+                    "Accept-Language": "zh-Hans",
+                    "X-ClientVersion": "4.0.530a 5fe1dc6c",
+                    "X-UserId": "0f04d16a175c411e",
+                    "X-HomeGeographicRegion": "zh-Hans-CN",
+                    "X-ClientTraceId": clientId,
+                    "X-MT-Signature": await sign(endpointUrl),
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Content-Length": "0",
+                    "Accept-Encoding": "gzip"
+                },
+                signal: AbortSignal.timeout(10_000)
+            });
+
+            if (!response.ok) {
+                throw new Error(`获取endpoint失败: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const jwt = data.t.split(".")[1];
+            const decodedJwt = JSON.parse(Buffer.from(jwt, "base64url").toString());
+
+            tokenInfo = {
+                endpoint: data,
+                token: data.t,
+                expiredAt: decodedJwt.exp
+            };
+
+            return data;
+
+        } catch (error) {
+            console.error("获取endpoint失败:", error);
+            if (tokenInfo.token) {
+                console.log("使用过期的缓存token");
+                return tokenInfo.endpoint;
+            }
+            throw error;
+        } finally {
+            refreshPromise = null;
+        }
+    })();
+
+    return refreshPromise;
 }
 
 
 
+let _corsOrigin = "*";
+
 function makeCORSHeaders() {
     return {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": _corsOrigin,
         "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+        "Access-Control-Allow-Headers": "Content-Type, x-api-key, Authorization",
         "Access-Control-Max-Age": "86400"
     };
 }
@@ -1221,36 +1317,21 @@ function dateFormat() {
 }
 
 // 处理文件上传的函数
-async function handleFileUpload(request) {
+async function handleFileUpload(request, apiKey = null) {
     try {
         const formData = await request.formData();
         const file = formData.get('file');
-        const voice = formData.get('voice') || 'zh-CN-XiaoxiaoNeural';
-        const speed = formData.get('speed') || '1.0';
-        const volume = formData.get('volume') || '0';
-        const pitch = formData.get('pitch') || '0';
-        const style = formData.get('style') || 'general';
+        const voice = formData.has('voice') ? String(formData.get('voice')) : 'zh-CN-XiaoxiaoNeural';
+        const speed = formData.has('speed') ? String(formData.get('speed')) : '1.0';
+        const volume = formData.has('volume') ? String(formData.get('volume')) : '0';
+        const pitch = formData.has('pitch') ? String(formData.get('pitch')) : '0';
+        const style = formData.has('style') ? String(formData.get('style')) : 'general';
 
-        // 验证文件
-        if (!file) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "未找到上传的文件",
-                    type: "invalid_request_error",
-                    param: "file",
-                    code: "missing_file"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+        if (!file || typeof file === "string" || typeof file.arrayBuffer !== "function") {
+            return errorResponse(400, "missing_file", "file 字段必须为上传的文件");
         }
 
-        // 验证文件类型
-        if (!file.type.includes('text/') && !file.name.toLowerCase().endsWith('.txt')) {
+        if (!file.type.includes('text/') && !(file.name || "").toLowerCase().endsWith('.txt')) {
             return new Response(JSON.stringify({
                 error: {
                     message: "不支持的文件类型，请上传txt文件",
@@ -1306,30 +1387,15 @@ async function handleFileUpload(request) {
             });
         }
 
-        // 文本长度限制（10000字符）
-        if (text.length > 10000) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "文本内容过长（最大10000字符）",
-                    type: "invalid_request_error",
-                    param: "file",
-                    code: "text_too_long"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+        const validationError = validateTtsParams(text, voice, speed, pitch, volume, style);
+        if (validationError) {
+            return errorResponse(validationError.status, validationError.code, validationError.message);
         }
 
-        // 处理参数格式，与原有逻辑保持一致
-        let rate = parseInt(String((parseFloat(speed) - 1.0) * 100));
-        let numVolume = parseInt(String(parseFloat(volume) * 100));
-        let numPitch = parseInt(pitch);
+        let rate = Math.trunc((parseFloat(speed) - 1.0) * 100);
+        let numVolume = Math.trunc(parseFloat(volume));
+        let numPitch = Math.trunc(parseFloat(pitch));
 
-        // 调用TTS服务
         return await getVoice(
             text,
             voice,
@@ -1337,7 +1403,8 @@ async function handleFileUpload(request) {
             numPitch >= 0 ? `+${numPitch}Hz` : `${numPitch}Hz`,
             numVolume >= 0 ? `+${numVolume}%` : `${numVolume}%`,
             style,
-            "audio-24khz-48kbitrate-mono-mp3"
+            "audio-24khz-48kbitrate-mono-mp3",
+            apiKey
         );
 
     } catch (error) {
@@ -1362,22 +1429,8 @@ async function handleFileUpload(request) {
 // 处理语音转录的函数
 async function handleAudioTranscription(request, env = {}) {
     try {
-        // 验证请求方法
         if (request.method !== 'POST') {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "只支持POST方法",
-                    type: "invalid_request_error",
-                    param: "method",
-                    code: "method_not_allowed"
-                }
-            }), {
-                status: 405,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+            return errorResponse(405, "method_not_allowed", "只支持 POST 方法");
         }
 
         const contentType = request.headers.get("content-type") || "";
@@ -1405,25 +1458,10 @@ async function handleAudioTranscription(request, env = {}) {
         const audioFile = formData.get('file');
         const customToken = formData.get('token');
 
-        // 验证音频文件
-        if (!audioFile) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "未找到音频文件",
-                    type: "invalid_request_error",
-                    param: "file",
-                    code: "missing_file"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+        if (!audioFile || typeof audioFile === "string" || typeof audioFile.arrayBuffer !== "function") {
+            return errorResponse(400, "missing_file", "file 字段必须为上传的音频文件");
         }
 
-        // 验证文件大小（限制为10MB）
         if (audioFile.size > 10 * 1024 * 1024) {
             return new Response(JSON.stringify({
                 error: {
@@ -1447,10 +1485,10 @@ async function handleAudioTranscription(request, env = {}) {
             'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'
         ];
         
-        const isValidType = allowedTypes.some(type => 
-            audioFile.type.includes(type) || 
-            audioFile.name.toLowerCase().match(/\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i)
-        );
+        const fileType = audioFile.type || "";
+        const fileName = audioFile.name || "";
+        const isValidType = allowedTypes.some(type => fileType.includes(type)) ||
+            /\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i.test(fileName);
 
         if (!isValidType) {
             return new Response(JSON.stringify({
@@ -1498,7 +1536,8 @@ async function handleAudioTranscription(request, env = {}) {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
-            body: apiFormData
+            body: apiFormData,
+            signal: AbortSignal.timeout(60_000)
         });
 
         if (!apiResponse.ok) {
