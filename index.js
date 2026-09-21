@@ -719,6 +719,149 @@ const HTML_PAGE = `
             color: white;
         }
         
+        /* API 使用说明样式 */
+        .api-guide {
+            background: var(--surface-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .api-guide-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .api-guide-header:hover {
+            background: var(--background-color);
+        }
+
+        .api-guide-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .api-guide-arrow {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .api-guide-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .api-guide-body {
+            padding: 0 30px 30px;
+        }
+
+        .api-section {
+            margin-bottom: 28px;
+        }
+
+        .api-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .api-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .api-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            position: relative;
+            background: #1e293b;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+        }
+
+        .code-block code {
+            color: #e2e8f0;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+            white-space: pre;
+        }
+
+        .code-block .code-placeholder {
+            color: #fbbf24;
+        }
+
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .api-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--background-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .api-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .api-table code {
+            background: var(--background-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            color: var(--primary-color);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -813,6 +956,27 @@ const HTML_PAGE = `
             
             .result-actions .btn-secondary {
                 min-width: auto;
+            }
+
+            .api-guide-header {
+                padding: 16px 20px;
+            }
+
+            .api-guide-body {
+                padding: 0 20px 20px;
+            }
+
+            .code-block pre {
+                padding: 16px;
+                font-size: 0.75rem;
+            }
+
+            .api-table {
+                font-size: 0.8rem;
+            }
+
+            .api-table th, .api-table td {
+                padding: 8px 6px;
             }
         }
     </style>
@@ -1075,6 +1239,132 @@ const HTML_PAGE = `
             </div>
         </div>
         
+        <!-- API 使用说明 -->
+        <div class="api-guide" id="apiGuide">
+            <div class="api-guide-header" id="apiGuideToggle">
+                <h2>API 调用指南</h2>
+                <span class="api-guide-arrow" id="apiGuideArrow">▼</span>
+            </div>
+            <div class="api-guide-body" id="apiGuideBody" style="display: none;">
+                <div class="api-section">
+                    <h3>OpenAI SDK (Python)</h3>
+                    <p class="api-desc">兼容 OpenAI SDK，可直接用于大模型应用中的语音合成。</p>
+                    <div class="code-block">
+                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                        <pre><code>from openai import OpenAI
+
+client = OpenAI(
+    api_key="<span class="code-placeholder">your-api-key</span>",
+    base_url="<span class="code-placeholder" id="codeBaseUrl">http://127.0.0.1:8787</span>/v1",
+)
+
+response = client.audio.speech.create(
+    model="tts-1",
+    voice="zh-CN-XiaoxiaoNeural",  # 或使用别名: alloy, echo, nova 等
+    input="你好，这是语音合成测试。",
+    speed=1.0,
+)
+response.write_to_file("speech.mp3")</code></pre>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>OpenAI SDK (Node.js)</h3>
+                    <div class="code-block">
+                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                        <pre><code>import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+    apiKey: "<span class="code-placeholder">your-api-key</span>",
+    baseURL: "<span class="code-placeholder">http://127.0.0.1:8787</span>/v1",
+});
+
+const response = await client.audio.speech.create({
+    model: "tts-1",
+    voice: "zh-CN-YunxiNeural",
+    input: "你好，这是语音合成测试。",
+});
+
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync("speech.mp3", buffer);</code></pre>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>cURL</h3>
+                    <div class="code-block">
+                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                        <pre><code>curl <span class="code-placeholder">http://127.0.0.1:8787</span>/v1/audio/speech \\
+  -H "Authorization: Bearer <span class="code-placeholder">your-api-key</span>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "tts-1",
+    "input": "你好，这是语音合成测试。",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "speed": 1.0
+  }' \\
+  --output speech.mp3</code></pre>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>语音转文字</h3>
+                    <div class="code-block">
+                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
+                        <pre><code>curl <span class="code-placeholder">http://127.0.0.1:8787</span>/v1/audio/transcriptions \\
+  -H "Authorization: Bearer <span class="code-placeholder">your-api-key</span>" \\
+  -F "file=@speech.mp3"</code></pre>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>可用接口</h3>
+                    <table class="api-table">
+                        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>/v1/audio/speech</code></td><td>POST</td><td>文字转语音</td></tr>
+                            <tr><td><code>/v1/audio/transcriptions</code></td><td>POST</td><td>语音转文字</td></tr>
+                            <tr><td><code>/v1/audio/voices</code></td><td>GET</td><td>查询可用音色</td></tr>
+                            <tr><td><code>/v1/models</code></td><td>GET</td><td>查询可用模型</td></tr>
+                            <tr><td><code>/healthz</code></td><td>GET</td><td>健康检查（无需鉴权）</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="api-section">
+                    <h3>OpenAI 音色别名</h3>
+                    <p class="api-desc">支持以下 OpenAI 音色别名，自动映射到对应的中文语音：</p>
+                    <table class="api-table">
+                        <thead><tr><th>别名</th><th>映射语音</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>alloy</code></td><td>晓晓 (XiaoxiaoNeural)</td></tr>
+                            <tr><td><code>echo</code></td><td>云扬 (YunyangNeural)</td></tr>
+                            <tr><td><code>fable</code></td><td>云健 (YunjianNeural)</td></tr>
+                            <tr><td><code>onyx</code></td><td>云枫 (YunfengNeural)</td></tr>
+                            <tr><td><code>nova</code></td><td>晓萱 (XiaoxuanNeural)</td></tr>
+                            <tr><td><code>shimmer</code></td><td>晓涵 (XiaohanNeural)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="api-section">
+                    <h3>TTS 请求参数</h3>
+                    <table class="api-table">
+                        <thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>input</code></td><td>string</td><td>—</td><td>要转换的文本（必填）</td></tr>
+                            <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
+                            <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
+                            <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
+                            <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量调节</td></tr>
+                            <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- 语音转录界面 -->
         <div class="transcription-container" id="transcriptionContainer" style="display: none;">
             <div class="form-container">
@@ -1958,6 +2248,30 @@ const HTML_PAGE = `
             // 滚动到TTS区域
             document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
         });
+
+        // API 指南展开/收起
+        document.getElementById('apiGuideToggle').addEventListener('click', function() {
+            const body = document.getElementById('apiGuideBody');
+            const arrow = document.getElementById('apiGuideArrow');
+            if (body.style.display === 'none') {
+                body.style.display = 'block';
+                arrow.classList.add('open');
+            } else {
+                body.style.display = 'none';
+                arrow.classList.remove('open');
+            }
+        });
+
+        // 复制代码块
+        function copyCode(btn) {
+            const code = btn.parentElement.querySelector('code');
+            const text = code.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.textContent;
+                btn.textContent = '已复制';
+                setTimeout(() => { btn.textContent = original; }, 2000);
+            });
+        }
 
         // 初始化国际化
         function initializeI18n() {

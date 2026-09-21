@@ -13,7 +13,7 @@ Open TTS 是一个轻量、自托管的语音处理服务，提供网页操作�
 - 长文本自动分段和批量合成
 - 中文、英文、日文、韩文、西班牙文、法文、德文和俄文界面
 - API Key 鉴权
-- Docker 多架构镜像
+- Docker 镜像（amd64）
 - 健康检查、模型列表和音色列表接口
 
 语音合成依赖 Microsoft 在线语音服务。语音转文字使用 `FunAudioLLM/SenseVoiceSmall`，通过兼容接口调用。运行环境需要访问外网。
@@ -163,7 +163,7 @@ export IMAGE=ghcr.io/izerui/open-tts:latest
 
 docker login ghcr.io
 docker buildx build \
-  --platform linux/amd64,linux/arm64 \
+  --platform linux/amd64 \
   -t "${IMAGE}" \
   --push \
   .
