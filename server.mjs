@@ -6,7 +6,7 @@ import app from "./index.js";
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number.parseInt(process.env.PORT || "8787", 10);
-const apiKey = process.env.API_KEY || "sk-tts-default-key";
+const apiKey = process.env.API_KEY || "sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e";
 const runtimeEnv = {
   SILICONFLOW_API_KEY: process.env.SILICONFLOW_API_KEY || "",
 };

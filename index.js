@@ -43,8 +43,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
 .navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px}
 .navbar h1{font-size:1.15rem;font-weight:700;color:#111827;letter-spacing:-0.01em}
 .navbar-right{display:flex;align-items:center;gap:12px}
-.navbar-right input[type="password"]{width:200px;padding:5px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#f9fafb;color:#374151}
-.navbar-right input[type="password"]:focus{outline:none;border-color:#3b82f6}
+.navbar-right input[type="text"]{width:200px;padding:5px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#f9fafb;color:#374151}
+.navbar-right input[type="text"]:focus{outline:none;border-color:#3b82f6}
 .lang-wrap{position:relative}
 .lang-btn{display:flex;align-items:center;gap:4px;padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:13px;color:#6b7280}
 .lang-btn:hover{border-color:#9ca3af}
@@ -107,7 +107,7 @@ audio{width:100%;margin-bottom:10px}
 .api-tbl code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:12px;color:#3b82f6}
 @media(max-width:640px){
   .navbar{padding:0 12px}
-  .navbar-right input[type="password"]{width:120px}
+  .navbar-right input[type="text"]{width:120px}
   .shell{padding:56px 10px 24px}
   .tab{padding:8px 12px;font-size:13px}
   .panel{padding:16px}
@@ -122,7 +122,7 @@ audio{width:100%;margin-bottom:10px}
 <div class="navbar">
   <h1 data-i18n="header.title">Open TTS</h1>
   <div class="navbar-right">
-    <input type="password" id="serviceApiKey" value="sk-tts-default-key" placeholder="API Key" autocomplete="off">
+    <input type="text" id="serviceApiKey" value="sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" placeholder="API Key" autocomplete="off">
     <div class="lang-wrap">
       <div class="lang-btn" id="languageBtn">
         <span id="currentLangFlag">🌐</span>
@@ -276,7 +276,7 @@ audio{width:100%;margin-bottom:10px}
           <label><input type="radio" name="tokenOption" value="default" checked> 使用服务端 Token</label>
           <label><input type="radio" name="tokenOption" value="custom"> 自定义 Token</label>
         </div>
-        <input type="password" class="inp" id="tokenInput" placeholder="输入您的 API Token" style="display:none;min-height:auto;margin-top:6px">
+        <input type="text" class="inp" id="tokenInput" placeholder="输入您的 API Token" style="display:none;min-height:auto;margin-top:6px">
       </div>
 
       <button type="submit" class="btn btn-blue" id="transcribeBtn">开始语音转录</button>

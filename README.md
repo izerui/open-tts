@@ -23,7 +23,7 @@ Open TTS 是一个轻量、自托管的语音处理服务，提供网页操作�
 需要 Node.js 22 或更高版本：
 
 ```bash
-API_KEY=sk-tts-default-key node server.mjs
+API_KEY=sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e node server.mjs
 ```
 
 服务默认监听：
@@ -55,7 +55,7 @@ docker run --rm \
 镜像内置默认 API Key：
 
 ```text
-sk-tts-default-key
+sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e
 ```
 
 通过环境变量覆盖：
@@ -72,7 +72,7 @@ docker run --rm \
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/speech \
-  -H "Authorization: Bearer sk-tts-default-key" \
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "tts-1",
@@ -89,7 +89,7 @@ OpenAI Python SDK：
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="sk-tts-default-key",
+    api_key="sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e",
     base_url="http://127.0.0.1:8787/v1",
 )
 
@@ -119,14 +119,14 @@ zh-CN-YunxiNeural
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/voices \
-  -H "Authorization: Bearer sk-tts-default-key"
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e"
 ```
 
 查询模型：
 
 ```bash
 curl http://127.0.0.1:8787/v1/models \
-  -H "Authorization: Bearer sk-tts-default-key"
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e"
 ```
 
 ## 语音转文字
@@ -141,7 +141,7 @@ SILICONFLOW_API_KEY=your-siliconflow-key npm start
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/transcriptions \
-  -H "Authorization: Bearer sk-tts-default-key" \
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" \
   -F "file=@speech.mp3"
 ```
 
@@ -149,7 +149,7 @@ curl http://127.0.0.1:8787/v1/audio/transcriptions \
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/transcriptions \
-  -H "Authorization: Bearer sk-tts-default-key" \
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" \
   -F "file=@speech.mp3" \
   -F "token=your-siliconflow-key"
 ```
