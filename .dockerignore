@@ -1,0 +1,7 @@
+.git
+.github
+.idea
+*.iml
+*.mp3
+README*
+node_modules

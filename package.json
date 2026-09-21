@@ -1,0 +1,14 @@
+{
+  "name": "open-tts",
+  "version": "1.0.0",
+  "description": "Self-hosted text-to-speech and speech-to-text service with an OpenAI-compatible API",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check index.js && node --check server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
