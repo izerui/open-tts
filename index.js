@@ -26,1258 +26,311 @@ let tokenInfo = {
     expiredAt: null
 };
 
+
 // HTML 页面模板
 const HTML_PAGE = `
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="page.title">Open TTS - AI-Powered Voice Processing Platform</title>
-    <meta name="description" content="" data-i18n-content="page.description">
-    <meta name="keywords" content="" data-i18n-content="page.keywords">
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #64748b;
-            --success-color: #059669;
-            --warning-color: #d97706;
-            --error-color: #dc2626;
-            --background-color: #f8fafc;
-            --surface-color: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;  
-            --border-color: #e2e8f0;
-            --border-focus: #3b82f6;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: var(--surface-color);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            padding: 40px 30px;
-            text-align: center;
-            margin-bottom: 30px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            letter-spacing: -0.025em;
-        }
-        
-        .header .subtitle {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        
-        .header .features {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .feature-icon {
-            width: 20px;
-            height: 20px;
-            color: var(--success-color);
-        }
-        
-        .main-content {
-            background: var(--surface-color);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-        
-        .form-container {
-            padding: 40px;
-        }
-        
-        .form-group {
-            margin-bottom: 24px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-        }
-        
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 16px;
-            color: var(--text-primary);
-            background: var(--surface-color);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
-        }
-        
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-        }
-        
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-        
-        .btn-primary {
-            width: 100%;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-secondary {
-            background: var(--success-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .btn-secondary:hover {
-            background: #047857;
-            transform: translateY(-1px);
-        }
-        
-        .result-container {
-            margin-top: 32px;
-            padding: 24px;
-            background: var(--background-color);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            display: none;
-        }
-        
-        .audio-player {
-            width: 100%;
-            margin-bottom: 16px;
-            border-radius: var(--radius-md);
-        }
-        
-        .error-message {
-            color: var(--error-color);
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 16px;
-            border-radius: var(--radius-md);
-            margin-top: 16px;
-            font-weight: 500;
-        }
-        
-        .loading-container {
-            text-align: center;
-            padding: 32px 20px;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border-color);
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-        
-        .loading-text {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        /* 输入方式选择优化样式 */
-        .input-method-tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 20px;
-            background: var(--background-color);
-            padding: 4px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-        }
-        
-        .tab-btn {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 20px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        
-        .tab-btn:hover {
-            color: var(--primary-color);
-            background: rgba(37, 99, 235, 0.05);
-        }
-        
-        .tab-btn.active {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: var(--shadow-sm);
-            transform: translateY(-1px);
-        }
-        
-        .tab-btn .tab-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            font-size: 0.875rem;
-        }
-        
-        .tab-btn:not(.active) .tab-icon {
-            background: rgba(100, 116, 139, 0.1);
-        }
-        
-        .file-upload-container {
-            width: 100%;
-        }
-        
-        .file-drop-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: linear-gradient(135deg, var(--background-color) 0%, rgba(248, 250, 252, 0.8) 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .file-drop-zone::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .file-drop-zone:hover::before,
-        .file-drop-zone.dragover::before {
-            opacity: 1;
-        }
-        
-        .file-drop-zone:hover,
-        .file-drop-zone.dragover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
-        }
-        
-        .file-drop-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .file-drop-icon {
-            width: 64px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
-            border-radius: var(--radius-lg);
-            color: white;
-            margin-bottom: 8px;
-            box-shadow: var(--shadow-md);
-            position: relative;
-        }
-        
-        .file-drop-text {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.4;
-        }
-        
-        .file-drop-hint {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin: 0;
-            padding: 8px 16px;
-            background: rgba(100, 116, 139, 0.1);
-            border-radius: var(--radius-sm);
-        }
-        
-        .file-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--surface-color) 0%, rgba(248, 250, 252, 0.5) 100%);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            margin-top: 16px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
-        }
-        
-        .file-info:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .file-details {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-        }
-        
-        .file-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .file-name::before {
-            content: '';
-            width: 16px;
-            height: 16px;
-            background: var(--primary-color);
-            border-radius: 3px;
-            opacity: 0.8;
-            flex-shrink: 0;
-        }
-        
-        .file-size {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            background: rgba(100, 116, 139, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            width: fit-content;
-        }
-        
-        .file-remove-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: var(--error-color);
-            color: white;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 600;
-        }
-        
-        .file-remove-btn:hover {
-            background: #b91c1c;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-        
-        /* 主功能切换器样式 */
-        .mode-switcher {
-            max-width: 900px;
-            margin: 0 auto 30px;
-            padding: 0 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .mode-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 16px 32px;
-            border: 2px solid var(--border-color);
-            background: var(--surface-color);
-            color: var(--text-secondary);
-            border-radius: var(--radius-lg);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            flex: 1;
-            max-width: 250px;
-        }
-        
-        .mode-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .mode-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .mode-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 语音转录界面样式 */
-        .transcription-container {
-            background: var(--surface-color);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .audio-upload-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: linear-gradient(135deg, var(--background-color) 0%, rgba(248, 250, 252, 0.8) 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .audio-upload-zone::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .audio-upload-zone:hover::before,
-        .audio-upload-zone.dragover::before {
-            opacity: 1;
-        }
-        
-        .audio-upload-zone:hover,
-        .audio-upload-zone.dragover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
-        }
-        
-        .token-config {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 16px;
-        }
-        
-        .token-option {
-            display: flex;
-            align-items: center;
-        }
-        
-        .token-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: color 0.2s ease;
-        }
-        
-        .token-label:hover {
-            color: var(--text-primary);
-        }
-        
-        .token-label input[type="radio"] {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid var(--border-color);
-            margin: 0;
-            cursor: pointer;
-            accent-color: var(--primary-color);
-        }
-        
-        .transcription-result {
-            margin-top: 20px;
-        }
-        
-        .result-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        
-        .result-actions .btn-secondary {
-            flex: 1;
-            min-width: 140px;
-        }
-        
-        /* 语言切换器样式 */
-        .language-switcher {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .language-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .language-btn:hover {
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .language-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 4px;
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            min-width: 120px;
-            display: none;
-        }
-        
-        .language-dropdown.show {
-            display: block;
-        }
-        
-        .language-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: background-color 0.2s ease;
-        }
-        
-        .language-option:hover {
-            background: var(--background-color);
-            color: var(--text-primary);
-        }
-        
-        .language-option.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        /* API 使用说明样式 */
-        .api-guide {
-            background: var(--surface-color);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            margin-top: 30px;
-            overflow: hidden;
-        }
-
-        .api-guide-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 30px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            user-select: none;
-        }
-
-        .api-guide-header:hover {
-            background: var(--background-color);
-        }
-
-        .api-guide-header h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .api-guide-arrow {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: transform 0.3s ease;
-        }
-
-        .api-guide-arrow.open {
-            transform: rotate(180deg);
-        }
-
-        .api-guide-body {
-            padding: 0 30px 30px;
-        }
-
-        .api-section {
-            margin-bottom: 28px;
-        }
-
-        .api-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .api-section h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .api-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
-
-        .code-block {
-            position: relative;
-            background: #1e293b;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-        }
-
-        .code-block pre {
-            margin: 0;
-            padding: 20px;
-            overflow-x: auto;
-            font-size: 0.8125rem;
-            line-height: 1.7;
-        }
-
-        .code-block code {
-            color: #e2e8f0;
-            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
-            white-space: pre;
-        }
-
-        .code-block .code-placeholder {
-            color: #fbbf24;
-        }
-
-        .code-copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            padding: 4px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 1;
-        }
-
-        .code-copy-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: #e2e8f0;
-        }
-
-        .api-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-
-        .api-table th {
-            text-align: left;
-            padding: 10px 12px;
-            background: var(--background-color);
-            color: var(--text-secondary);
-            font-weight: 600;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .api-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .api-table code {
-            background: var(--background-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.8125rem;
-            color: var(--primary-color);
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 16px;
-            }
-            
-            .header {
-                padding: 30px 20px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .form-container {
-                padding: 24px;
-            }
-            
-            .controls-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            
-            .input-method-tabs {
-                gap: 2px;
-                padding: 2px;
-            }
-            
-            .tab-btn {
-                padding: 12px 16px;
-                font-size: 0.85rem;
-                gap: 8px;
-            }
-            
-            .tab-btn .tab-icon {
-                width: 18px;
-                height: 18px;
-            }
-            
-            .file-drop-zone {
-                padding: 32px 16px;
-            }
-            
-            .file-drop-icon {
-                width: 56px;
-                height: 56px;
-            }
-            
-            .file-info {
-                padding: 16px;
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
-            
-            .file-remove-btn {
-                align-self: flex-end;
-            }
-            
-            /* 移动端模式切换器样式 */
-            .mode-switcher {
-                padding: 0 16px;
-                margin-bottom: 20px;
-                flex-direction: column;
-                gap: 12px;
-            }
-            
-            .mode-btn {
-                max-width: none;
-                padding: 14px 20px;
-                font-size: 0.9rem;
-                gap: 8px;
-            }
-            
-            .mode-icon {
-                width: 20px;
-                height: 20px;
-            }
-            
-            /* 移动端语音转录界面样式 */
-            .audio-upload-zone {
-                padding: 32px 16px;
-            }
-            
-            .token-config {
-                flex-direction: column;
-                gap: 12px;
-            }
-            
-            .result-actions {
-                flex-direction: column;
-            }
-            
-            .result-actions .btn-secondary {
-                min-width: auto;
-            }
-
-            .api-guide-header {
-                padding: 16px 20px;
-            }
-
-            .api-guide-body {
-                padding: 0 20px 20px;
-            }
-
-            .code-block pre {
-                padding: 16px;
-                font-size: 0.75rem;
-            }
-
-            .api-table {
-                font-size: 0.8rem;
-            }
-
-            .api-table th, .api-table td {
-                padding: 8px 6px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.title">Open TTS</title>
+<meta name="description" content="" data-i18n-content="page.description">
+<meta name="keywords" content="" data-i18n-content="page.keywords">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;background:#f9fafb;color:#1f2937;line-height:1.5}
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px}
+.navbar h1{font-size:1.15rem;font-weight:700;color:#111827;letter-spacing:-0.01em}
+.navbar-right{display:flex;align-items:center;gap:12px}
+.navbar-right input[type="password"]{width:200px;padding:5px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#f9fafb;color:#374151}
+.navbar-right input[type="password"]:focus{outline:none;border-color:#3b82f6}
+.lang-wrap{position:relative}
+.lang-btn{display:flex;align-items:center;gap:4px;padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:13px;color:#6b7280}
+.lang-btn:hover{border-color:#9ca3af}
+.lang-dd{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);min-width:110px;overflow:hidden;z-index:200}
+.lang-dd.show{display:block}
+.lang-opt{display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;font-size:13px;color:#4b5563}
+.lang-opt:hover{background:#f3f4f6}
+.lang-opt.active{background:#3b82f6;color:#fff}
+.shell{max-width:960px;margin:0 auto;padding:60px 20px 40px}
+.tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin-bottom:0}
+.tab{padding:10px 20px;font-size:14px;font-weight:500;color:#6b7280;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab:hover{color:#111827}
+.tab.active{color:#3b82f6;border-bottom-color:#3b82f6}
+.panel{display:none;background:#fff;border:1px solid #e5e7eb;border-top:none;padding:24px}
+.panel.active{display:block}
+label.lbl{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px}
+textarea.inp{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:14px;font-family:inherit;resize:vertical;min-height:100px;color:#1f2937;background:#fff}
+textarea.inp:focus{outline:none;border-color:#3b82f6}
+select.sel{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;color:#1f2937;background:#fff;cursor:pointer}
+select.sel:focus{outline:none;border-color:#3b82f6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;border:none;border-radius:4px;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-blue{background:#3b82f6;color:#fff;width:100%}
+.btn-blue:hover:not(:disabled){background:#2563eb}
+.btn-blue:disabled{opacity:.5;cursor:not-allowed}
+.btn-green{background:#059669;color:#fff}
+.btn-green:hover{background:#047857}
+.btn-sm{padding:6px 14px;font-size:13px}
+.file-toggle{display:inline-block;margin-top:6px;margin-bottom:14px;font-size:13px;color:#3b82f6;cursor:pointer;border:none;background:none;padding:0}
+.file-toggle:hover{text-decoration:underline}
+.drop-zone{border:2px dashed #d1d5db;border-radius:6px;padding:32px 16px;text-align:center;cursor:pointer;transition:border-color .2s;background:#fafbfc;margin-bottom:14px}
+.drop-zone:hover,.drop-zone.dragover{border-color:#3b82f6;background:#eff6ff}
+.drop-zone p{margin:6px 0;color:#6b7280;font-size:13px}
+.drop-zone p:first-child{font-weight:500;color:#374151;font-size:14px}
+.file-card{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;margin-bottom:14px;font-size:13px}
+.file-card .fname{font-weight:500;color:#1f2937}
+.file-card .fsize{color:#9ca3af;margin-left:8px}
+.file-card button{background:#ef4444;color:#fff;border:none;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:12px;line-height:1}
+.result-box{margin-top:20px;padding:16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;display:none}
+.spinner{width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-text{text-align:center;color:#6b7280;font-size:13px}
+audio{width:100%;margin-bottom:10px}
+.err-msg{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:10px 14px;border-radius:4px;font-size:13px}
+.token-row{display:flex;gap:16px;margin-bottom:10px;font-size:13px}
+.token-row label{display:flex;align-items:center;gap:5px;cursor:pointer;color:#4b5563}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.code-sec{margin-bottom:24px}
+.code-sec h3{font-size:15px;font-weight:600;color:#111827;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f3f4f6}
+.code-sec p{font-size:13px;color:#6b7280;margin-bottom:8px}
+.code-wrap{position:relative;background:#1e293b;border-radius:6px;overflow:hidden;margin-bottom:4px}
+.code-wrap pre{margin:0;padding:16px;overflow-x:auto;font-size:12.5px;line-height:1.65}
+.code-wrap code{color:#e2e8f0;font-family:'SF Mono','Fira Code',Consolas,monospace;white-space:pre}
+.code-wrap .hl{color:#fbbf24}
+.copy-btn{position:absolute;top:6px;right:6px;padding:3px 10px;background:rgba(255,255,255,.1);color:#94a3b8;border:1px solid rgba(255,255,255,.1);border-radius:3px;font-size:11px;cursor:pointer}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#e2e8f0}
+.api-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+.api-tbl th{text-align:left;padding:8px 10px;background:#f9fafb;color:#6b7280;font-weight:600;border-bottom:2px solid #e5e7eb}
+.api-tbl td{padding:8px 10px;border-bottom:1px solid #f3f4f6;color:#374151}
+.api-tbl code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:12px;color:#3b82f6}
+@media(max-width:640px){
+  .navbar{padding:0 12px}
+  .navbar-right input[type="password"]{width:120px}
+  .shell{padding:56px 10px 24px}
+  .tab{padding:8px 12px;font-size:13px}
+  .panel{padding:16px}
+  .grid2{grid-template-columns:1fr}
+  .actions{flex-direction:column}
+  .token-row{flex-direction:column;gap:8px}
+}
+</style>
 </head>
 <body>
-    <!-- 语言切换器 -->
-    <div class="language-switcher">
-        <div class="language-btn" id="languageBtn">
-            <span id="currentLangFlag">🌐</span>
-            <span id="currentLangName" data-i18n="lang.current">English</span>
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-            </svg>
-        </div>
-        <div class="language-dropdown" id="languageDropdown">
-            <div class="language-option" data-lang="en">
-                <span>🇺🇸</span>
-                <span data-i18n="lang.en">English</span>
-            </div>
-            <div class="language-option" data-lang="zh">
-                <span>🇨🇳</span>
-                <span data-i18n="lang.zh">中文</span>
-            </div>
-            <div class="language-option" data-lang="ja">
-                <span>🇯🇵</span>
-                <span data-i18n="lang.ja">日本語</span>
-            </div>
-            <div class="language-option" data-lang="ko">
-                <span>🇰🇷</span>
-                <span data-i18n="lang.ko">한국어</span>
-            </div>
-            <div class="language-option" data-lang="es">
-                <span>🇪🇸</span>
-                <span data-i18n="lang.es">Español</span>
-            </div>
-            <div class="language-option" data-lang="fr">
-                <span>🇫🇷</span>
-                <span data-i18n="lang.fr">Français</span>
-            </div>
-            <div class="language-option" data-lang="de">
-                <span>🇩🇪</span>
-                <span data-i18n="lang.de">Deutsch</span>
-            </div>
-            <div class="language-option" data-lang="ru">
-                <span>🇷🇺</span>
-                <span data-i18n="lang.ru">Русский</span>
-            </div>
-        </div>
+
+<div class="navbar">
+  <h1 data-i18n="header.title">Open TTS</h1>
+  <div class="navbar-right">
+    <input type="password" id="serviceApiKey" value="sk-tts-default-key" placeholder="API Key" autocomplete="off">
+    <div class="lang-wrap">
+      <div class="lang-btn" id="languageBtn">
+        <span id="currentLangFlag">🌐</span>
+        <span id="currentLangName" data-i18n="lang.current">English</span>
+        <svg width="10" height="10" fill="currentColor" viewBox="0 0 16 16"><path d="M1.6 4.6a.5.5 0 01.8 0L8 10.3l5.6-5.7a.5.5 0 01.8.7l-6 6a.5.5 0 01-.8 0l-6-6a.5.5 0 010-.7z"/></svg>
+      </div>
+      <div class="lang-dd" id="languageDropdown">
+        <div class="lang-opt" data-lang="en"><span>🇺🇸</span><span>English</span></div>
+        <div class="lang-opt" data-lang="zh"><span>🇨🇳</span><span>中文</span></div>
+        <div class="lang-opt" data-lang="ja"><span>🇯🇵</span><span>日本語</span></div>
+        <div class="lang-opt" data-lang="ko"><span>🇰🇷</span><span>한국어</span></div>
+        <div class="lang-opt" data-lang="es"><span>🇪🇸</span><span>Español</span></div>
+        <div class="lang-opt" data-lang="fr"><span>🇫🇷</span><span>Français</span></div>
+        <div class="lang-opt" data-lang="de"><span>🇩🇪</span><span>Deutsch</span></div>
+        <div class="lang-opt" data-lang="ru"><span>🇷🇺</span><span>Русский</span></div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="container">
-        <div class="header">
-            <h1 data-i18n="header.title">Open TTS</h1>
-            <p class="subtitle" data-i18n="header.subtitle">AI-Powered Voice Processing Platform</p>
-            <div class="features">
-                <div class="feature-item">
-                    <span class="feature-icon">✨</span>
-                    <span data-i18n="header.feature1">20+ Voice Options</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">⚡</span>
-                    <span data-i18n="header.feature2">Lightning Fast</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">🔐</span>
-                    <span data-i18n="header.feature3">Self-Hosted API</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">📱</span>
-                    <span data-i18n="header.feature4">Download Support</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 主功能切换器 -->
-        <div class="mode-switcher">
-            <button type="button" class="mode-btn active" id="ttsMode">
-                <span class="mode-icon">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-                    </svg>
-                </span>
-                <span data-i18n="mode.tts">Text to Speech</span>
-            </button>
-            <button type="button" class="mode-btn" id="transcriptionMode">
-                <span class="mode-icon">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 9m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
-                        <path d="M9 17v4"/>
-                        <path d="M12 13a3 3 0 0 0 3 -3"/>
-                        <path d="M15 9.5v-3a3 3 0 0 0 -3 -3h-1"/>
-                        <path d="M19 8v8"/>
-                        <path d="M17 9v6"/>
-                        <path d="M21 9v6"/>
-                    </svg>
-                </span>
-                <span data-i18n="mode.transcription">Speech to Text</span>
-            </button>
-        </div>
+<div class="shell">
+  <div class="tabs">
+    <button class="tab active" data-tab="tts" data-i18n="tab.tts">文字转语音</button>
+    <button class="tab" data-tab="stt" data-i18n="tab.stt">语音转文字</button>
+    <button class="tab" data-tab="docs" data-i18n="tab.docs">API 文档</button>
+  </div>
 
-        <div class="form-container" style="margin-bottom: 24px;">
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="serviceApiKey">服务 API Key</label>
-                <input type="password" class="form-input" id="serviceApiKey"
-                       value="sk-tts-default-key" autocomplete="off">
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <div class="form-container">
-                <form id="ttsForm">
-                    <!-- 输入方式选择 -->
-                    <div class="form-group">
-                        <label class="form-label">选择输入方式</label>
-                        <div class="input-method-tabs">
-                            <button type="button" class="tab-btn active" id="textInputTab">
-                                <span class="tab-icon">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                    </svg>
-                                </span>
-                                <span>手动输入</span>
-                            </button>
-                            <button type="button" class="tab-btn" id="fileUploadTab">
-                                <span class="tab-icon">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                                    </svg>
-                                </span>
-                                <span>上传文件</span>
-                            </button>
-                        </div>
-                    </div>
+  <!-- TTS Panel -->
+  <div class="panel active" id="panel-tts">
+    <form id="ttsForm">
+      <div style="margin-bottom:14px">
+        <label class="lbl" for="text">输入文本</label>
+        <textarea class="inp" id="text" placeholder="请输入要转换为语音的文本内容..." required></textarea>
+        <button type="button" class="file-toggle" id="fileToggleBtn">或上传 txt 文件</button>
+      </div>
 
-                    <!-- 手动输入区域 -->
-                    <div class="form-group" id="textInputArea">
-                        <label class="form-label" for="text">输入文本</label>
-                        <textarea class="form-textarea" id="text" placeholder="请输入要转换为语音的文本内容，支持中文、英文、数字等..." required></textarea>
-                    </div>
-
-                    <!-- 文件上传区域 -->
-                    <div class="form-group" id="fileUploadArea" style="display: none;">
-                        <label class="form-label" for="fileInput">上传txt文件</label>
-                        <div class="file-upload-container">
-                            <div class="file-drop-zone" id="fileDropZone">
-                                <div class="file-drop-content">
-                                    <div class="file-drop-icon">
-                                        <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2L13.09 8.26L19 7L17.74 13.09L24 12L17.74 10.91L19 5L13.09 6.26L12 0L10.91 6.26L5 5L6.26 10.91L0 12L6.26 13.09L5 19L10.91 17.74L12 24L13.09 17.74L19 19L17.74 13.09L24 12Z"/>
-                                            <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2M18 20H6V4H13V9H18V20Z"/>
-                                        </svg>
-                                    </div>
-                                    <p class="file-drop-text">拖拽txt文件到此处，或点击选择文件</p>
-                                    <p class="file-drop-hint">支持txt格式，最大500KB</p>
-                                </div>
-                                <input type="file" id="fileInput" accept=".txt,text/plain" style="display: none;">
-                            </div>
-                            <div class="file-info" id="fileInfo" style="display: none;">
-                                <div class="file-details">
-                                    <span class="file-name" id="fileName"></span>
-                                    <span class="file-size" id="fileSize"></span>
-                                </div>
-                                <button type="button" class="file-remove-btn" id="fileRemoveBtn">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div class="controls-grid">
-                        <div class="form-group">
-                            <label class="form-label" for="voice">语音选择</label>
-                            <select class="form-select" id="voice">
-                                <option value="zh-CN-XiaoxiaoNeural">晓晓 (女声·温柔)</option>
-                                <option value="zh-CN-YunxiNeural">云希 (男声·清朗)</option>
-                                <option value="zh-CN-YunyangNeural">云扬 (男声·阳光)</option>
-                                <option value="zh-CN-XiaoyiNeural">晓伊 (女声·甜美)</option>
-                                <option value="zh-CN-YunjianNeural">云健 (男声·稳重)</option>
-                                <option value="zh-CN-XiaochenNeural">晓辰 (女声·知性)</option>
-                                <option value="zh-CN-XiaohanNeural">晓涵 (女声·优雅)</option>
-                                <option value="zh-CN-XiaomengNeural">晓梦 (女声·梦幻)</option>
-                                <option value="zh-CN-XiaomoNeural">晓墨 (女声·文艺)</option>
-                                <option value="zh-CN-XiaoqiuNeural">晓秋 (女声·成熟)</option>
-                                <option value="zh-CN-XiaoruiNeural">晓睿 (女声·智慧)</option>
-                                <option value="zh-CN-XiaoshuangNeural">晓双 (女声·活泼)</option>
-                                <option value="zh-CN-XiaoxuanNeural">晓萱 (女声·清新)</option>
-                                <option value="zh-CN-XiaoyanNeural">晓颜 (女声·柔美)</option>
-                                <option value="zh-CN-XiaoyouNeural">晓悠 (女声·悠扬)</option>
-                                <option value="zh-CN-XiaozhenNeural">晓甄 (女声·端庄)</option>
-                                <option value="zh-CN-YunfengNeural">云枫 (男声·磁性)</option>
-                                <option value="zh-CN-YunhaoNeural">云皓 (男声·豪迈)</option>
-                                <option value="zh-CN-YunxiaNeural">云夏 (男声·热情)</option>
-                                <option value="zh-CN-YunyeNeural">云野 (男声·野性)</option>
-                                <option value="zh-CN-YunzeNeural">云泽 (男声·深沉)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="speed">语速调节</label>
-                            <select class="form-select" id="speed">
-                                <option value="0.5">🐌 很慢</option>
-                                <option value="0.75">🚶 慢速</option>
-                                <option value="1.0" selected>⚡ 正常</option>
-                                <option value="1.25">🏃 快速</option>
-                                <option value="1.5">🚀 很快</option>
-                                <option value="2.0">💨 极速</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="pitch">音调高低</label>
-                            <select class="form-select" id="pitch">
-                                <option value="-50">📉 很低沉</option>
-                                <option value="-25">📊 低沉</option>
-                                <option value="0" selected>🎵 标准</option>
-                                <option value="25">📈 高亢</option>
-                                <option value="50">🎶 很高亢</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="style">语音风格</label>
-                            <select class="form-select" id="style">
-                                <option value="general" selected>🎭 通用风格</option>
-                                <option value="assistant">🤖 智能助手</option>
-                                <option value="chat">💬 聊天对话</option>
-                                <option value="customerservice">📞 客服专业</option>
-                                <option value="newscast">📺 新闻播报</option>
-                                <option value="affectionate">💕 亲切温暖</option>
-                                <option value="calm">😌 平静舒缓</option>
-                                <option value="cheerful">😊 愉快欢乐</option>
-                                <option value="gentle">🌸 温和柔美</option>
-                                <option value="lyrical">🎼 抒情诗意</option>
-                                <option value="serious">🎯 严肃正式</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary" id="generateBtn">
-                        <span>🎙️</span>
-                        <span>开始生成语音</span>
-                    </button>
-            </form>
-            
-                <div id="result" class="result-container">
-                    <div id="loading" class="loading-container" style="display: none;">
-                        <div class="loading-spinner"></div>
-                        <p class="loading-text" id="loadingText">正在生成语音，请稍候...</p>
-                        <div class="progress-info" id="progressInfo" style="margin-top: 12px; font-size: 0.875rem; color: var(--text-secondary);"></div>
-                    </div>
-                    
-                    <div id="success" style="display: none;">
-                        <audio id="audioPlayer" class="audio-player" controls></audio>
-                        <a id="downloadBtn" class="btn-secondary" download="speech.mp3">
-                            <span>📥</span>
-                            <span>下载音频文件</span>
-                        </a>
-                    </div>
-                    
-                    <div id="error" class="error-message" style="display: none;"></div>
-                </div>
-            </div>
+      <div id="fileUploadArea" style="display:none">
+        <div class="drop-zone" id="fileDropZone">
+          <p>拖拽 txt 文件到此处，或点击选择</p>
+          <p>支持 txt 格式，最大 500KB</p>
+          <input type="file" id="fileInput" accept=".txt,text/plain" style="display:none">
         </div>
-        
-        <!-- API 使用说明 -->
-        <div class="api-guide" id="apiGuide">
-            <div class="api-guide-header" id="apiGuideToggle">
-                <h2>API 调用指南</h2>
-                <span class="api-guide-arrow" id="apiGuideArrow">▼</span>
-            </div>
-            <div class="api-guide-body" id="apiGuideBody" style="display: none;">
-                <div class="api-section">
-                    <h3>OpenAI SDK (Python)</h3>
-                    <p class="api-desc">兼容 OpenAI SDK，可直接用于大模型应用中的语音合成。</p>
-                    <div class="code-block">
-                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
-                        <pre><code>from openai import OpenAI
+        <div class="file-card" id="fileInfo" style="display:none">
+          <div><span class="fname" id="fileName"></span><span class="fsize" id="fileSize"></span></div>
+          <button type="button" id="fileRemoveBtn">✕</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label class="lbl" for="voice">语音选择</label>
+          <select class="sel" id="voice">
+            <option value="zh-CN-XiaoxiaoNeural">晓晓 (女声·温柔)</option>
+            <option value="zh-CN-YunxiNeural">云希 (男声·清朗)</option>
+            <option value="zh-CN-YunyangNeural">云扬 (男声·阳光)</option>
+            <option value="zh-CN-XiaoyiNeural">晓伊 (女声·甜美)</option>
+            <option value="zh-CN-YunjianNeural">云健 (男声·稳重)</option>
+            <option value="zh-CN-XiaochenNeural">晓辰 (女声·知性)</option>
+            <option value="zh-CN-XiaohanNeural">晓涵 (女声·优雅)</option>
+            <option value="zh-CN-XiaomengNeural">晓梦 (女声·梦幻)</option>
+            <option value="zh-CN-XiaomoNeural">晓墨 (女声·文艺)</option>
+            <option value="zh-CN-XiaoqiuNeural">晓秋 (女声·成熟)</option>
+            <option value="zh-CN-XiaoruiNeural">晓睦 (女声·智慧)</option>
+            <option value="zh-CN-XiaoshuangNeural">晓双 (女声·活泼)</option>
+            <option value="zh-CN-XiaoxuanNeural">晓萱 (女声·清新)</option>
+            <option value="zh-CN-XiaoyanNeural">晓颜 (女声·柔美)</option>
+            <option value="zh-CN-XiaoyouNeural">晓悠 (女声·悠扬)</option>
+            <option value="zh-CN-XiaozhenNeural">晓甄 (女声·端庄)</option>
+            <option value="zh-CN-YunfengNeural">云枫 (男声·磁性)</option>
+            <option value="zh-CN-YunhaoNeural">云皓 (男声·豪迈)</option>
+            <option value="zh-CN-YunxiaNeural">云夏 (男声·热情)</option>
+            <option value="zh-CN-YunyeNeural">云野 (男声·野性)</option>
+            <option value="zh-CN-YunzeNeural">云泽 (男声·深沉)</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="speed">语速</label>
+          <select class="sel" id="speed">
+            <option value="0.5">0.5x 很慢</option>
+            <option value="0.75">0.75x 慢速</option>
+            <option value="1.0" selected>1.0x 正常</option>
+            <option value="1.25">1.25x 快速</option>
+            <option value="1.5">1.5x 很快</option>
+            <option value="2.0">2.0x 极速</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="pitch">音调</label>
+          <select class="sel" id="pitch">
+            <option value="-50">-50 很低沉</option>
+            <option value="-25">-25 低沉</option>
+            <option value="0" selected>0 标准</option>
+            <option value="25">+25 高亢</option>
+            <option value="50">+50 很高亢</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="style">风格</label>
+          <select class="sel" id="style">
+            <option value="general" selected>通用风格</option>
+            <option value="assistant">智能助手</option>
+            <option value="chat">聊天对话</option>
+            <option value="customerservice">客服专业</option>
+            <option value="newscast">新闻播报</option>
+            <option value="affectionate">亲切温暖</option>
+            <option value="calm">平静舒缓</option>
+            <option value="cheerful">愉快欢乐</option>
+            <option value="gentle">温和柔美</option>
+            <option value="lyrical">抱情诗意</option>
+            <option value="serious">严肃正式</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-blue" id="generateBtn">开始生成语音</button>
+    </form>
+
+    <div id="result" class="result-box">
+      <div id="loading" style="display:none">
+        <div class="spinner"></div>
+        <p class="progress-text" id="loadingText">正在生成语音，请稍候...</p>
+        <p class="progress-text" id="progressInfo"></p>
+      </div>
+      <div id="success" style="display:none">
+        <audio id="audioPlayer" controls></audio>
+        <a id="downloadBtn" class="btn btn-green btn-sm" download="speech.mp3">下载 MP3</a>
+      </div>
+      <div id="error" class="err-msg" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- STT Panel -->
+  <div class="panel" id="panel-stt">
+    <form id="transcriptionForm">
+      <div style="margin-bottom:14px">
+        <label class="lbl">上传音频文件</label>
+        <div class="drop-zone" id="audioDropZone">
+          <p>拖拽音频文件到此处，或点击选择</p>
+          <p>支持 mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp，最大 10MB</p>
+          <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a,.flac,.aac,.ogg,.webm,.amr,.3gp,audio/*" style="display:none">
+        </div>
+        <div class="file-card" id="audioFileInfo" style="display:none">
+          <div><span class="fname" id="audioFileName"></span><span class="fsize" id="audioFileSize"></span></div>
+          <button type="button" id="audioFileRemoveBtn">✕</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="lbl">API Token 配置</label>
+        <div class="token-row">
+          <label><input type="radio" name="tokenOption" value="default" checked> 使用服务端 Token</label>
+          <label><input type="radio" name="tokenOption" value="custom"> 自定义 Token</label>
+        </div>
+        <input type="password" class="inp" id="tokenInput" placeholder="输入您的 API Token" style="display:none;min-height:auto;margin-top:6px">
+      </div>
+
+      <button type="submit" class="btn btn-blue" id="transcribeBtn">开始语音转录</button>
+    </form>
+
+    <div id="transcriptionResult" class="result-box">
+      <div id="transcriptionLoading" style="display:none">
+        <div class="spinner"></div>
+        <p class="progress-text" id="transcriptionLoadingText">正在转录音频，请稍候...</p>
+        <p class="progress-text" id="transcriptionProgressInfo"></p>
+      </div>
+      <div id="transcriptionSuccess" style="display:none">
+        <label class="lbl">转录结果</label>
+        <textarea class="inp" id="transcriptionText" readonly placeholder="转录结果将在这里显示..."></textarea>
+        <div class="actions">
+          <button type="button" class="btn btn-green btn-sm" id="copyTranscriptionBtn">复制</button>
+          <button type="button" class="btn btn-green btn-sm" id="editTranscriptionBtn">编辑</button>
+          <button type="button" class="btn btn-green btn-sm" id="useForTtsBtn">转为语音</button>
+        </div>
+      </div>
+      <div id="transcriptionError" class="err-msg" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- API Docs Panel -->
+  <div class="panel" id="panel-docs">
+
+    <div class="code-sec">
+      <h3>OpenAI SDK (Python)</h3>
+      <p>兼容 OpenAI SDK，可直接用于大模型应用中的语音合成。</p>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>from openai import OpenAI
 
 client = OpenAI(
-    api_key="<span class="code-placeholder">your-api-key</span>",
-    base_url="<span class="code-placeholder" id="codeBaseUrl">http://127.0.0.1:8787</span>/v1",
+    api_key="<span class="hl">your-api-key</span>",
+    base_url="<span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1",
 )
 
 response = client.audio.speech.create(
     model="tts-1",
-    voice="zh-CN-XiaoxiaoNeural",  # 或使用别名: alloy, echo, nova 等
+    voice="zh-CN-XiaoxiaoNeural",  # 或别名: alloy, echo, nova ...
     input="你好，这是语音合成测试。",
     speed=1.0,
 )
-response.write_to_file("speech.mp3")</code></pre>
-                    </div>
-                </div>
+response.write_to_file("speech.mp3")</code></pre></div>
+    </div>
 
-                <div class="api-section">
-                    <h3>OpenAI SDK (Node.js)</h3>
-                    <div class="code-block">
-                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
-                        <pre><code>import OpenAI from "openai";
+    <div class="code-sec">
+      <h3>OpenAI SDK (Node.js)</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>import OpenAI from "openai";
 import fs from "fs";
 
 const client = new OpenAI({
-    apiKey: "<span class="code-placeholder">your-api-key</span>",
-    baseURL: "<span class="code-placeholder">http://127.0.0.1:8787</span>/v1",
+    apiKey: "<span class="hl">your-api-key</span>",
+    baseURL: "<span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1",
 });
 
 const response = await client.audio.speech.create({
@@ -1287,1034 +340,354 @@ const response = await client.audio.speech.create({
 });
 
 const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync("speech.mp3", buffer);</code></pre>
-                    </div>
-                </div>
+fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
+    </div>
 
-                <div class="api-section">
-                    <h3>cURL</h3>
-                    <div class="code-block">
-                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
-                        <pre><code>curl <span class="code-placeholder">http://127.0.0.1:8787</span>/v1/audio/speech \\
-  -H "Authorization: Bearer <span class="code-placeholder">your-api-key</span>" \\
-  -H "Content-Type: application/json" \\
+    <div class="code-sec">
+      <h3>cURL — 文字转语音</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/speech \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -H "Content-Type: application/json" \
   -d '{
     "model": "tts-1",
     "input": "你好，这是语音合成测试。",
     "voice": "zh-CN-XiaoxiaoNeural",
     "speed": 1.0
-  }' \\
-  --output speech.mp3</code></pre>
-                    </div>
-                </div>
-
-                <div class="api-section">
-                    <h3>语音转文字</h3>
-                    <div class="code-block">
-                        <button type="button" class="code-copy-btn" onclick="copyCode(this)">复制</button>
-                        <pre><code>curl <span class="code-placeholder">http://127.0.0.1:8787</span>/v1/audio/transcriptions \\
-  -H "Authorization: Bearer <span class="code-placeholder">your-api-key</span>" \\
-  -F "file=@speech.mp3"</code></pre>
-                    </div>
-                </div>
-
-                <div class="api-section">
-                    <h3>可用接口</h3>
-                    <table class="api-table">
-                        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>/v1/audio/speech</code></td><td>POST</td><td>文字转语音</td></tr>
-                            <tr><td><code>/v1/audio/transcriptions</code></td><td>POST</td><td>语音转文字</td></tr>
-                            <tr><td><code>/v1/audio/voices</code></td><td>GET</td><td>查询可用音色</td></tr>
-                            <tr><td><code>/v1/models</code></td><td>GET</td><td>查询可用模型</td></tr>
-                            <tr><td><code>/healthz</code></td><td>GET</td><td>健康检查（无需鉴权）</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="api-section">
-                    <h3>OpenAI 音色别名</h3>
-                    <p class="api-desc">支持以下 OpenAI 音色别名，自动映射到对应的中文语音：</p>
-                    <table class="api-table">
-                        <thead><tr><th>别名</th><th>映射语音</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>alloy</code></td><td>晓晓 (XiaoxiaoNeural)</td></tr>
-                            <tr><td><code>echo</code></td><td>云扬 (YunyangNeural)</td></tr>
-                            <tr><td><code>fable</code></td><td>云健 (YunjianNeural)</td></tr>
-                            <tr><td><code>onyx</code></td><td>云枫 (YunfengNeural)</td></tr>
-                            <tr><td><code>nova</code></td><td>晓萱 (XiaoxuanNeural)</td></tr>
-                            <tr><td><code>shimmer</code></td><td>晓涵 (XiaohanNeural)</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="api-section">
-                    <h3>TTS 请求参数</h3>
-                    <table class="api-table">
-                        <thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>input</code></td><td>string</td><td>—</td><td>要转换的文本（必填）</td></tr>
-                            <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
-                            <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
-                            <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
-                            <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量调节</td></tr>
-                            <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 语音转录界面 -->
-        <div class="transcription-container" id="transcriptionContainer" style="display: none;">
-            <div class="form-container">
-                <form id="transcriptionForm">
-                    <div class="form-group">
-                        <label class="form-label">上传音频文件</label>
-                        <div class="audio-upload-zone" id="audioDropZone">
-                            <div class="file-drop-content">
-                                <div class="file-drop-icon">
-                                    <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
-                                        <path d="M14 2v6h6"/>
-                                        <path d="M12 18v-6"/>
-                                        <path d="M9 15l3-3 3 3"/>
-                                    </svg>
-                                </div>
-                                <p class="file-drop-text">拖拽音频文件到此处，或点击选择文件</p>
-                                <p class="file-drop-hint">支持mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp格式，最大10MB</p>
-                            </div>
-                            <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a,.flac,.aac,.ogg,.webm,.amr,.3gp,audio/*" style="display: none;">
-                        </div>
-                        <div class="file-info" id="audioFileInfo" style="display: none;">
-                            <div class="file-details">
-                                <span class="file-name" id="audioFileName"></span>
-                                <span class="file-size" id="audioFileSize"></span>
-                            </div>
-                            <button type="button" class="file-remove-btn" id="audioFileRemoveBtn">✕</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="tokenInput">API Token配置</label>
-                        <div class="token-config">
-                            <div class="token-option">
-                                <label class="token-label">
-                                    <input type="radio" name="tokenOption" value="default" checked>
-                                    <span>使用服务端Token</span>
-                                </label>
-                            </div>
-                            <div class="token-option">
-                                <label class="token-label">
-                                    <input type="radio" name="tokenOption" value="custom">
-                                    <span>使用自定义Token</span>
-                                </label>
-                            </div>
-                        </div>
-                        <input type="password" class="form-input" id="tokenInput" 
-                               placeholder="输入您的API Token（可选）" style="display: none;">
-                    </div>
-
-                    <button type="submit" class="btn-primary" id="transcribeBtn">
-                        <span>🎧</span>
-                        <span>开始语音转录</span>
-                    </button>
-                </form>
-
-                <div id="transcriptionResult" class="result-container">
-                    <div id="transcriptionLoading" class="loading-container" style="display: none;">
-                        <div class="loading-spinner"></div>
-                        <p class="loading-text" id="transcriptionLoadingText">正在转录音频，请稍候...</p>
-                        <div class="progress-info" id="transcriptionProgressInfo" style="margin-top: 12px; font-size: 0.875rem; color: var(--text-secondary);"></div>
-                    </div>
-                    
-                    <div id="transcriptionSuccess" style="display: none;">
-                        <div class="transcription-result">
-                            <label class="form-label">转录结果</label>
-                            <textarea class="form-textarea" id="transcriptionText" 
-                                      placeholder="转录结果将在这里显示..." readonly></textarea>
-                            <div class="result-actions">
-                                <button type="button" class="btn-secondary" id="copyTranscriptionBtn">
-                                    <span>📋</span>
-                                    <span>复制文本</span>
-                                </button>
-                                <button type="button" class="btn-secondary" id="editTranscriptionBtn">
-                                    <span>✏️</span>
-                                    <span>编辑文本</span>
-                                </button>
-                                <button type="button" class="btn-secondary" id="useForTtsBtn">
-                                    <span>🎙️</span>
-                                    <span>转为语音</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="transcriptionError" class="error-message" style="display: none;"></div>
-                </div>
-            </div>
-        </div>
-        
+  }' \
+  --output speech.mp3</code></pre></div>
     </div>
 
-    <script>
-        let selectedFile = null;
-        let currentInputMethod = 'text'; // 'text' or 'file'
-        let currentMode = 'tts'; // 'tts' or 'transcription'
-        let selectedAudioFile = null;
-        let transcriptionToken = null;
-        let currentLanguage = 'en'; // 默认语言
+    <div class="code-sec">
+      <h3>cURL — 语音转文字</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/transcriptions \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -F "file=@speech.mp3"</code></pre></div>
+    </div>
 
-        // 国际化翻译数据
-        const translations = {
-            en: {
-                'page.title': 'Open TTS - AI-Powered Voice Processing Platform',
-                'page.description': 'Open TTS is a self-hosted platform for text to speech and speech to text with more than 20 voice options.',
-                'page.keywords': 'text to speech,AI voice synthesis,self-hosted TTS,voice generator,speech to text,voice transcription',
-                'lang.current': 'English',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'AI-Powered Voice Processing Platform',
-                'header.feature1': '20+ Voice Options',
-                'header.feature2': 'Lightning Fast',
-                'header.feature3': 'Self-Hosted API',
-                'header.feature4': 'Download Support',
-                'mode.tts': 'Text to Speech',
-                'mode.transcription': 'Speech to Text'
-            },
-            zh: {
-                'page.title': 'Open TTS - AI驱动的语音处理平台',
-                'page.description': 'Open TTS 是一个自托管语音处理平台，支持文字转语音和语音转文字，并提供20多种语音选项。',
-                'page.keywords': '文字转语音,AI语音合成,自托管TTS,语音生成器,语音转文字,语音转录',
-                'lang.current': '中文',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'AI驱动的语音处理平台',
-                'header.feature1': '20+种语音选项',
-                'header.feature2': '闪电般快速',
-                'header.feature3': '自托管接口',
-                'header.feature4': '支持下载',
-                'mode.tts': '文字转语音',
-                'mode.transcription': '语音转文字'
-            },
-            ja: {
-                'page.title': 'Open TTS - AI音声処理プラットフォーム',
-                'page.description': 'Open TTSは、テキスト読み上げと音声テキスト変換に対応するセルフホスト型音声処理プラットフォームです。',
-                'page.keywords': 'テキスト読み上げ,AI音声合成,セルフホストTTS,音声ジェネレーター,音声テキスト変換,音声転写',
-                'lang.current': '日本語',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'AI音声処理プラットフォーム',
-                'header.feature1': '20以上の音声オプション',
-                'header.feature2': '高速処理',
-                'header.feature3': 'セルフホストAPI',
-                'header.feature4': 'ダウンロード対応',
-                'mode.tts': 'テキスト読み上げ',
-                'mode.transcription': '音声テキスト変換'
-            },
-            ko: {
-                'page.title': 'Open TTS - AI 음성 처리 플랫폼',
-                'page.description': 'Open TTS는 텍스트 음성 변환과 음성 텍스트 변환을 지원하는 셀프 호스팅 음성 처리 플랫폼입니다.',
-                'page.keywords': '텍스트 음성 변환,AI 음성 합성,셀프 호스팅 TTS,음성 생성기,음성 텍스트 변환,음성 전사',
-                'lang.current': '한국어',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'AI 음성 처리 플랫폼',
-                'header.feature1': '20개 이상의 음성 옵션',
-                'header.feature2': '빠른 처리',
-                'header.feature3': '셀프 호스팅 API',
-                'header.feature4': '다운로드 지원',
-                'mode.tts': '텍스트 음성 변환',
-                'mode.transcription': '음성 텍스트 변환'
-            },
-            es: {
-                'page.title': 'Open TTS - Plataforma de Procesamiento de Voz con IA',
-                'page.description': 'Open TTS es una plataforma de voz autoalojada que convierte texto a voz y voz a texto con más de 20 opciones.',
-                'page.keywords': 'texto a voz,síntesis de voz IA,TTS autoalojado,generador de voz,voz a texto,transcripción de voz',
-                'lang.current': 'Español',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'Plataforma de Procesamiento de Voz con IA',
-                'header.feature1': 'Más de 20 Opciones de Voz',
-                'header.feature2': 'Ultrarrápido',
-                'header.feature3': 'API Autoalojada',
-                'header.feature4': 'Soporte de Descarga',
-                'mode.tts': 'Texto a Voz',
-                'mode.transcription': 'Voz a Texto'
-            },
-            fr: {
-                'page.title': 'Open TTS - Plateforme de Traitement Vocal IA',
-                'page.description': 'Open TTS est une plateforme vocale auto-hébergée qui convertit le texte en parole et la parole en texte.',
-                'page.keywords': 'texte vers parole,synthèse vocale IA,TTS auto-hébergé,générateur vocal,parole vers texte,transcription vocale',
-                'lang.current': 'Français',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'Plateforme de Traitement Vocal IA',
-                'header.feature1': 'Plus de 20 Options Vocales',
-                'header.feature2': 'Ultra-rapide',
-                'header.feature3': 'API Auto-hébergée',
-                'header.feature4': 'Support de Téléchargement',
-                'mode.tts': 'Texte vers Parole',
-                'mode.transcription': 'Parole vers Texte'
-            },
-            de: {
-                'page.title': 'Open TTS - KI-gestützte Sprachverarbeitungsplattform',
-                'page.description': 'Open TTS ist eine selbst gehostete Sprachplattform für Text-zu-Sprache und Sprache-zu-Text.',
-                'page.keywords': 'Text zu Sprache,KI-Sprachsynthese,selbst gehostetes TTS,Sprachgenerator,Sprache zu Text,Sprachtranskription',
-                'lang.current': 'Deutsch',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'KI-gestützte Sprachverarbeitungsplattform',
-                'header.feature1': 'Über 20 Sprachoptionen',
-                'header.feature2': 'Blitzschnell',
-                'header.feature3': 'Selbst gehostete API',
-                'header.feature4': 'Download-Unterstützung',
-                'mode.tts': 'Text zu Sprache',
-                'mode.transcription': 'Sprache zu Text'
-            },
-            ru: {
-                'page.title': 'Open TTS - ИИ-платформа обработки голоса',
-                'page.description': 'Open TTS — это самостоятельная голосовая платформа для преобразования текста в речь и речи в текст.',
-                'page.keywords': 'текст в речь,ИИ синтез речи,самостоятельный TTS,генератор голоса,речь в текст,транскрипция речи',
-                'lang.current': 'Русский',
-                'lang.en': 'English',
-                'lang.zh': '中文',
-                'lang.ja': '日本語',
-                'lang.ko': '한국어',
-                'lang.es': 'Español',
-                'lang.fr': 'Français',
-                'lang.de': 'Deutsch',
-                'lang.ru': 'Русский',
-                'header.title': 'Open TTS',
-                'header.subtitle': 'ИИ-платформа обработки голоса',
-                'header.feature1': 'Более 20 голосовых опций',
-                'header.feature2': 'Молниеносно',
-                'header.feature3': 'Собственный API',
-                'header.feature4': 'Поддержка Загрузки',
-                'mode.tts': 'Текст в Речь',
-                'mode.transcription': 'Речь в Текст'
-            }
-        };
+    <div class="code-sec">
+      <h3>可用接口</h3>
+      <table class="api-tbl">
+        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>/v1/audio/speech</code></td><td>POST</td><td>文字转语音</td></tr>
+          <tr><td><code>/v1/audio/transcriptions</code></td><td>POST</td><td>语音转文字</td></tr>
+          <tr><td><code>/v1/audio/voices</code></td><td>GET</td><td>查询可用音色</td></tr>
+          <tr><td><code>/v1/models</code></td><td>GET</td><td>查询可用模型</td></tr>
+          <tr><td><code>/healthz</code></td><td>GET</td><td>健康检查（无需鉴权）</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-        // 国际化功能
-        function detectLanguage() {
-            // 检测浏览器语言
-            const browserLang = navigator.language || navigator.userLanguage;
-            const shortLang = browserLang.split('-')[0];
-            
-            // 检查是否支持该语言
-            if (translations[shortLang]) {
-                return shortLang;
-            }
-            
-            // 默认返回英语
-            return 'en';
-        }
+    <div class="code-sec">
+      <h3>全部可用语音</h3>
+      <p>在 <code>voice</code> 参数中传入以下值（也可通过 <code>GET /v1/audio/voices</code> 查询）：</p>
+      <table class="api-tbl">
+        <thead><tr><th>voice 参数值</th><th>名称</th><th>类型</th></tr></thead>
+        <tbody>
+          <tr><td><code>zh-CN-XiaoxiaoNeural</code></td><td>晓晓</td><td>女声·温柔</td></tr>
+          <tr><td><code>zh-CN-XiaoyiNeural</code></td><td>晓伊</td><td>女声·甜美</td></tr>
+          <tr><td><code>zh-CN-XiaochenNeural</code></td><td>晓辰</td><td>女声·知性</td></tr>
+          <tr><td><code>zh-CN-XiaohanNeural</code></td><td>晓涵</td><td>女声·优雅</td></tr>
+          <tr><td><code>zh-CN-XiaomengNeural</code></td><td>晓梦</td><td>女声·梦幻</td></tr>
+          <tr><td><code>zh-CN-XiaomoNeural</code></td><td>晓墨</td><td>女声·文艺</td></tr>
+          <tr><td><code>zh-CN-XiaoqiuNeural</code></td><td>晓秋</td><td>女声·成熟</td></tr>
+          <tr><td><code>zh-CN-XiaoruiNeural</code></td><td>晓睿</td><td>女声·智慧</td></tr>
+          <tr><td><code>zh-CN-XiaoshuangNeural</code></td><td>晓双</td><td>女声·活泼</td></tr>
+          <tr><td><code>zh-CN-XiaoxuanNeural</code></td><td>晓萱</td><td>女声·清新</td></tr>
+          <tr><td><code>zh-CN-XiaoyanNeural</code></td><td>晓颜</td><td>女声·柔美</td></tr>
+          <tr><td><code>zh-CN-XiaoyouNeural</code></td><td>晓悠</td><td>女声·悠扬</td></tr>
+          <tr><td><code>zh-CN-XiaozhenNeural</code></td><td>晓甄</td><td>女声·端庄</td></tr>
+          <tr><td><code>zh-CN-YunxiNeural</code></td><td>云希</td><td>男声·清朗</td></tr>
+          <tr><td><code>zh-CN-YunyangNeural</code></td><td>云扬</td><td>男声·阳光</td></tr>
+          <tr><td><code>zh-CN-YunjianNeural</code></td><td>云健</td><td>男声·稳重</td></tr>
+          <tr><td><code>zh-CN-YunfengNeural</code></td><td>云枫</td><td>男声·磁性</td></tr>
+          <tr><td><code>zh-CN-YunhaoNeural</code></td><td>云皓</td><td>男声·豪迈</td></tr>
+          <tr><td><code>zh-CN-YunxiaNeural</code></td><td>云夏</td><td>男声·热情</td></tr>
+          <tr><td><code>zh-CN-YunyeNeural</code></td><td>云野</td><td>男声·野性</td></tr>
+          <tr><td><code>zh-CN-YunzeNeural</code></td><td>云泽</td><td>男声·深沉</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            localStorage.setItem('open-tts-language', lang);
-            
-            // 更新页面语言属性
-            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
-            
-            // 应用翻译
-            applyTranslations();
-            
-            // 更新语言切换器
-            updateLanguageSwitcher();
-        }
+    <div class="code-sec">
+      <h3>OpenAI 音色别名</h3>
+      <p>支持以下 OpenAI 音色别名，自动映射到对应的中文语音：</p>
+      <table class="api-tbl">
+        <thead><tr><th>别名</th><th>映射语音</th></tr></thead>
+        <tbody>
+          <tr><td><code>alloy</code></td><td>晓晓 (XiaoxiaoNeural)</td></tr>
+          <tr><td><code>ash</code></td><td>云希 (YunxiNeural)</td></tr>
+          <tr><td><code>ballad</code></td><td>晓伊 (XiaoyiNeural)</td></tr>
+          <tr><td><code>coral</code></td><td>晓辰 (XiaochenNeural)</td></tr>
+          <tr><td><code>echo</code></td><td>云扬 (YunyangNeural)</td></tr>
+          <tr><td><code>fable</code></td><td>云健 (YunjianNeural)</td></tr>
+          <tr><td><code>nova</code></td><td>晓萱 (XiaoxuanNeural)</td></tr>
+          <tr><td><code>onyx</code></td><td>云枫 (YunfengNeural)</td></tr>
+          <tr><td><code>sage</code></td><td>晓睦 (XiaoruiNeural)</td></tr>
+          <tr><td><code>shimmer</code></td><td>晓涵 (XiaohanNeural)</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-        function applyTranslations() {
-            const langData = translations[currentLanguage];
-            
-            // 更新所有带有 data-i18n 属性的元素
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
-                if (langData[key]) {
-                    element.textContent = langData[key];
-                }
-            });
-            
-            // 更新 meta 标签
-            document.querySelectorAll('[data-i18n-content]').forEach(element => {
-                const key = element.getAttribute('data-i18n-content');
-                if (langData[key]) {
-                    element.setAttribute('content', langData[key]);
-                }
-            });
-            
-            // 更新页面标题
-            if (langData['page.title']) {
-                document.title = langData['page.title'];
-            }
-        }
+    <div class="code-sec">
+      <h3>TTS 请求参数</h3>
+      <table class="api-tbl">
+        <thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>input</code></td><td>string</td><td>—</td><td>要转换的文本（必填）</td></tr>
+          <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
+          <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
+          <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
+          <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量调节</td></tr>
+          <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-        function updateLanguageSwitcher() {
-            const langFlags = {
-                'en': '🇺🇸',
-                'zh': '🇨🇳',
-                'ja': '🇯🇵',
-                'ko': '🇰🇷',
-                'es': '🇪🇸',
-                'fr': '🇫🇷',
-                'de': '🇩🇪',
-                'ru': '🇷🇺'
-            };
-            
-            const langData = translations[currentLanguage];
-            document.getElementById('currentLangFlag').textContent = langFlags[currentLanguage];
-            document.getElementById('currentLangName').textContent = langData['lang.current'];
-            
-            // 更新选中状态
-            document.querySelectorAll('.language-option').forEach(option => {
-                option.classList.remove('active');
-                if (option.getAttribute('data-lang') === currentLanguage) {
-                    option.classList.add('active');
-                }
-            });
-        }
+  </div>
+</div>
 
-        // 初始化页面
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化国际化
-            initializeI18n();
+<script>
+let selectedFile = null;
+let selectedAudioFile = null;
+let currentLanguage = 'en';
 
-            const serviceApiKey = document.getElementById('serviceApiKey');
-            serviceApiKey.value = localStorage.getItem('open-tts-api-key') || serviceApiKey.value;
-            serviceApiKey.addEventListener('change', function() {
-                localStorage.setItem('open-tts-api-key', serviceApiKey.value);
-            });
-            
-            // 初始化其他功能
-            initializeInputMethodTabs();
-            initializeFileUpload();
-            initializeModeSwitcher();
-            initializeAudioUpload();
-            initializeTokenConfig();
-            initializeLanguageSwitcher();
-        });
+const translations = {
+  en: {
+    'page.title':'Open TTS','page.description':'Self-hosted text-to-speech and speech-to-text service with an OpenAI-compatible API','page.keywords':'text to speech,speech to text,OpenAI TTS,self-hosted',
+    'lang.current':'English','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'Text to Speech','tab.stt':'Speech to Text','tab.docs':'API Docs'
+  },
+  zh: {
+    'page.title':'Open TTS','page.description':'自托管的文字转语音和语音转文字服务','page.keywords':'文字转语音,语音转文字,OpenAI TTS',
+    'lang.current':'中文','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'文字转语音','tab.stt':'语音转文字','tab.docs':'API 文档'
+  },
+  ja: {
+    'page.title':'Open TTS','page.description':'セルフホスト型音声処理プラットフォーム','page.keywords':'テキスト読み上げ,音声テキスト変換',
+    'lang.current':'日本語','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'テキスト読み上げ','tab.stt':'音声テキスト変換','tab.docs':'API ドキュメント'
+  },
+  ko: {
+    'page.title':'Open TTS','page.description':'셀프 호스팅 음성 처리 플랫폼','page.keywords':'텍스트 음성 변환,음성 텍스트 변환',
+    'lang.current':'한국어','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'텍스트 음성 변환','tab.stt':'음성 텍스트 변환','tab.docs':'API 문서'
+  },
+  es: {
+    'page.title':'Open TTS','page.description':'Plataforma de procesamiento de voz autoalojada','page.keywords':'texto a voz,voz a texto',
+    'lang.current':'Español','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'Texto a Voz','tab.stt':'Voz a Texto','tab.docs':'API Docs'
+  },
+  fr: {
+    'page.title':'Open TTS','page.description':'Plateforme de traitement vocal auto-hébergée','page.keywords':'texte vers parole,parole vers texte',
+    'lang.current':'Français','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'Texte vers Parole','tab.stt':'Parole vers Texte','tab.docs':'API Docs'
+  },
+  de: {
+    'page.title':'Open TTS','page.description':'Selbst gehostete Sprachverarbeitungsplattform','page.keywords':'Text zu Sprache,Sprache zu Text',
+    'lang.current':'Deutsch','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'Text zu Sprache','tab.stt':'Sprache zu Text','tab.docs':'API Docs'
+  },
+  ru: {
+    'page.title':'Open TTS','page.description':'Самостоятельная платформа обработки голоса','page.keywords':'текст в речь,речь в текст',
+    'lang.current':'Русский','lang.en':'English','lang.zh':'中文','lang.ja':'日本語','lang.ko':'한국어','lang.es':'Español','lang.fr':'Français','lang.de':'Deutsch','lang.ru':'Русский',
+    'header.title':'Open TTS','tab.tts':'Текст в Речь','tab.stt':'Речь в Текст','tab.docs':'API'
+  }
+};
 
-        // 初始化输入方式切换
-        function initializeInputMethodTabs() {
-            const textInputTab = document.getElementById('textInputTab');
-            const fileUploadTab = document.getElementById('fileUploadTab');
-            const textInputArea = document.getElementById('textInputArea');
-            const fileUploadArea = document.getElementById('fileUploadArea');
+function detectLanguage(){var s=(navigator.language||'').split('-')[0];return translations[s]?s:'en'}
+function setLanguage(l){currentLanguage=l;localStorage.setItem('open-tts-language',l);document.documentElement.lang=l==='zh'?'zh-CN':l;applyTranslations();updateLangUI()}
+function applyTranslations(){var d=translations[currentLanguage]||{};document.querySelectorAll('[data-i18n]').forEach(function(e){var k=e.getAttribute('data-i18n');if(d[k])e.textContent=d[k]});document.querySelectorAll('[data-i18n-content]').forEach(function(e){var k=e.getAttribute('data-i18n-content');if(d[k])e.setAttribute('content',d[k])});if(d['page.title'])document.title=d['page.title']}
+function updateLangUI(){var flags={en:'🇺🇸',zh:'🇨🇳',ja:'🇯🇵',ko:'🇰🇷',es:'🇪🇸',fr:'🇫🇷',de:'🇩🇪',ru:'🇷🇺'};var d=translations[currentLanguage]||{};document.getElementById('currentLangFlag').innerHTML=flags[currentLanguage]||'';document.getElementById('currentLangName').textContent=d['lang.current']||'';document.querySelectorAll('.lang-opt').forEach(function(o){o.classList.toggle('active',o.getAttribute('data-lang')===currentLanguage)})}
 
-            textInputTab.addEventListener('click', function() {
-                currentInputMethod = 'text';
-                textInputTab.classList.add('active');
-                fileUploadTab.classList.remove('active');
-                textInputArea.style.display = 'block';
-                fileUploadArea.style.display = 'none';
-                document.getElementById('text').required = true;
-            });
+function formatFileSize(b){if(!b)return '0 B';var k=1024,s=['B','KB','MB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i]}
 
-            fileUploadTab.addEventListener('click', function() {
-                currentInputMethod = 'file';
-                fileUploadTab.classList.add('active');
-                textInputTab.classList.remove('active');
-                textInputArea.style.display = 'none';
-                fileUploadArea.style.display = 'block';
-                document.getElementById('text').required = false;
-            });
-        }
+function copyCode(btn){var code=btn.parentElement.querySelector('code');navigator.clipboard.writeText(code.textContent).then(function(){var t=btn.textContent;btn.textContent='OK';setTimeout(function(){btn.textContent=t},1500)})}
 
-        // 初始化文件上传功能
-        function initializeFileUpload() {
-            const fileDropZone = document.getElementById('fileDropZone');
-            const fileInput = document.getElementById('fileInput');
-            const fileInfo = document.getElementById('fileInfo');
-            const fileRemoveBtn = document.getElementById('fileRemoveBtn');
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-tab')===name)});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+name)});
+}
 
-            // 点击上传区域
-            fileDropZone.addEventListener('click', function() {
-                fileInput.click();
-            });
+document.addEventListener('DOMContentLoaded', function(){
+  // i18n
+  var saved=localStorage.getItem('open-tts-language');
+  currentLanguage=(saved&&translations[saved])?saved:detectLanguage();
+  setLanguage(currentLanguage);
 
-            // 文件选择
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    handleFileSelect(file);
-                }
-            });
+  // API key
+  var keyEl=document.getElementById('serviceApiKey');
+  keyEl.value=localStorage.getItem('open-tts-api-key')||keyEl.value;
+  keyEl.addEventListener('change',function(){localStorage.setItem('open-tts-api-key',keyEl.value)});
 
-            // 拖拽功能
-            fileDropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                fileDropZone.classList.add('dragover');
-            });
+  // auto-fill base URL
+  var origin=window.location.origin;
+  document.querySelectorAll('.auto-base-url').forEach(function(el){el.textContent=origin});
 
-            fileDropZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                fileDropZone.classList.remove('dragover');
-            });
+  // tabs
+  document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){switchTab(this.getAttribute('data-tab'))})});
 
-            fileDropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                fileDropZone.classList.remove('dragover');
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    handleFileSelect(file);
-                }
-            });
+  // language
+  var langBtn=document.getElementById('languageBtn'),langDD=document.getElementById('languageDropdown');
+  langBtn.addEventListener('click',function(e){e.stopPropagation();langDD.classList.toggle('show')});
+  document.addEventListener('click',function(){langDD.classList.remove('show')});
+  document.querySelectorAll('.lang-opt').forEach(function(o){o.addEventListener('click',function(){setLanguage(this.getAttribute('data-lang'));langDD.classList.remove('show')})});
 
-            // 移除文件
-            fileRemoveBtn.addEventListener('click', function() {
-                selectedFile = null;
-                fileInput.value = '';
-                fileInfo.style.display = 'none';
-                fileDropZone.style.display = 'block';
-            });
-        }
+  // file toggle
+  var fileArea=document.getElementById('fileUploadArea');
+  document.getElementById('fileToggleBtn').addEventListener('click',function(){
+    var showing=fileArea.style.display!=='none';
+    fileArea.style.display=showing?'none':'block';
+    this.textContent=showing?'\\u6216\\u4E0A\\u4F20 txt \\u6587\\u4EF6':'\\u9690\\u85CF\\u6587\\u4EF6\\u4E0A\\u4F20';
+  });
 
-        // 处理文件选择
-        function handleFileSelect(file) {
-            // 验证文件类型
-            if (!file.type.includes('text/') && !file.name.toLowerCase().endsWith('.txt')) {
-                alert('请选择txt格式的文本文件');
-                return;
-            }
+  // TTS file upload
+  var fdz=document.getElementById('fileDropZone'),fi=document.getElementById('fileInput'),finfo=document.getElementById('fileInfo');
+  fdz.addEventListener('click',function(){fi.click()});
+  fi.addEventListener('change',function(e){if(e.target.files[0])pickFile(e.target.files[0])});
+  fdz.addEventListener('dragover',function(e){e.preventDefault();fdz.classList.add('dragover')});
+  fdz.addEventListener('dragleave',function(e){e.preventDefault();fdz.classList.remove('dragover')});
+  fdz.addEventListener('drop',function(e){e.preventDefault();fdz.classList.remove('dragover');if(e.dataTransfer.files[0])pickFile(e.dataTransfer.files[0])});
+  document.getElementById('fileRemoveBtn').addEventListener('click',function(){selectedFile=null;fi.value='';finfo.style.display='none';fdz.style.display='block'});
 
-            // 验证文件大小
-            if (file.size > 500 * 1024) {
-                alert('文件大小不能超过500KB');
-                return;
-            }
+  function pickFile(f){
+    if(!f.type.includes('text/')&&!f.name.toLowerCase().endsWith('.txt')){alert('\\u8BF7\\u9009\\u62E9 txt \\u683C\\u5F0F\\u7684\\u6587\\u672C\\u6587\\u4EF6');return}
+    if(f.size>500*1024){alert('\\u6587\\u4EF6\\u5927\\u5C0F\\u4E0D\\u80FD\\u8D85\\u8FC7 500KB');return}
+    selectedFile=f;
+    document.getElementById('fileName').textContent=f.name;
+    document.getElementById('fileSize').textContent=formatFileSize(f.size);
+    finfo.style.display='flex';fdz.style.display='none';
+  }
 
-            selectedFile = file;
-            
-            // 显示文件信息
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileSize').textContent = formatFileSize(file.size);
-            document.getElementById('fileInfo').style.display = 'flex';
-            document.getElementById('fileDropZone').style.display = 'none';
-        }
+  // Audio upload
+  var adz=document.getElementById('audioDropZone'),afi=document.getElementById('audioFileInput'),afinfo=document.getElementById('audioFileInfo');
+  adz.addEventListener('click',function(){afi.click()});
+  afi.addEventListener('change',function(e){if(e.target.files[0])pickAudio(e.target.files[0])});
+  adz.addEventListener('dragover',function(e){e.preventDefault();adz.classList.add('dragover')});
+  adz.addEventListener('dragleave',function(e){e.preventDefault();adz.classList.remove('dragover')});
+  adz.addEventListener('drop',function(e){e.preventDefault();adz.classList.remove('dragover');if(e.dataTransfer.files[0])pickAudio(e.dataTransfer.files[0])});
+  document.getElementById('audioFileRemoveBtn').addEventListener('click',function(){selectedAudioFile=null;afi.value='';afinfo.style.display='none';adz.style.display='block'});
 
-        // 格式化文件大小
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+  function pickAudio(f){
+    var ok=['audio/mpeg','audio/mp3','audio/wav','audio/m4a','audio/flac','audio/aac','audio/ogg','audio/webm','audio/amr','audio/3gpp'];
+    var valid=ok.some(function(t){return f.type.includes(t)})||/\\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i.test(f.name);
+    if(!valid){alert('\\u8BF7\\u9009\\u62E9\\u97F3\\u9891\\u683C\\u5F0F\\u7684\\u6587\\u4EF6');return}
+    if(f.size>10*1024*1024){alert('\\u97F3\\u9891\\u6587\\u4EF6\\u5927\\u5C0F\\u4E0D\\u80FD\\u8D85\\u8FC7 10MB');return}
+    selectedAudioFile=f;
+    document.getElementById('audioFileName').textContent=f.name;
+    document.getElementById('audioFileSize').textContent=formatFileSize(f.size);
+    afinfo.style.display='flex';adz.style.display='none';
+  }
 
-        // 表单提交处理
-        document.getElementById('ttsForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const voice = document.getElementById('voice').value;
-            const speed = document.getElementById('speed').value;
-            const pitch = document.getElementById('pitch').value;
-            const style = document.getElementById('style').value;
-            
-            const generateBtn = document.getElementById('generateBtn');
-            const resultContainer = document.getElementById('result');
-            const loading = document.getElementById('loading');
-            const success = document.getElementById('success');
-            const error = document.getElementById('error');
-            
-            // 验证输入
-            if (currentInputMethod === 'text') {
-                const text = document.getElementById('text').value;
-                if (!text.trim()) {
-                    alert('请输入要转换的文本内容');
-                    return;
-                }
-            } else if (currentInputMethod === 'file') {
-                if (!selectedFile) {
-                    alert('请选择要上传的txt文件');
-                    return;
-                }
-            }
-            
-            // 重置状态
-            resultContainer.style.display = 'block';
-            loading.style.display = 'block';
-            success.style.display = 'none';
-            error.style.display = 'none';
-            generateBtn.disabled = true;
-            generateBtn.textContent = '生成中...';
-            
-            try {
-                let response;
-                let textLength = 0;
-                
-                // 更新加载提示
-                const loadingText = document.getElementById('loadingText');
-                const progressInfo = document.getElementById('progressInfo');
-                
-                if (currentInputMethod === 'text') {
-                    // 手动输入文本
-                    const text = document.getElementById('text').value;
-                    textLength = text.length;
-                    
-                    // 根据文本长度显示不同的提示
-                    if (textLength > 3000) {
-                        loadingText.textContent = '正在处理长文本，请耐心等待...';
-                        progressInfo.textContent = '文本长度: ' + textLength + ' 字符，预计需要 ' + (Math.ceil(textLength / 1500) * 2) + ' 秒';
-                    } else {
-                        loadingText.textContent = '正在生成语音，请稍候...';
-                        progressInfo.textContent = '文本长度: ' + textLength + ' 字符';
-                    }
-                    
-                    response = await fetch('/v1/audio/speech', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + document.getElementById('serviceApiKey').value,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            input: text,
-                            voice: voice,
-                            speed: parseFloat(speed),
-                            pitch: pitch,
-                            style: style
-                        })
-                    });
-                } else {
-                    // 文件上传
-                    loadingText.textContent = '正在处理上传的文件...';
-                    progressInfo.textContent = '文件: ' + selectedFile.name + ' (' + formatFileSize(selectedFile.size) + ')';
-                    
-                    const formData = new FormData();
-                    formData.append('file', selectedFile);
-                    formData.append('voice', voice);
-                    formData.append('speed', speed);
-                    formData.append('pitch', pitch);
-                    formData.append('style', style);
-                    
-                    response = await fetch('/v1/audio/speech', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + document.getElementById('serviceApiKey').value
-                        },
-                        body: formData
-                    });
-                }
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || '生成失败');
-                }
-                
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                
-                // 显示音频播放器
-                const audioPlayer = document.getElementById('audioPlayer');
-                const downloadBtn = document.getElementById('downloadBtn');
-                
-                audioPlayer.src = audioUrl;
-                downloadBtn.href = audioUrl;
-                
-                loading.style.display = 'none';
-                success.style.display = 'block';
-                
-            } catch (err) {
-                loading.style.display = 'none';
-                error.style.display = 'block';
-                
-                // 根据错误类型显示不同的提示
-                if (err.message.includes('Too many subrequests')) {
-                    error.textContent = '错误: 文本过长导致请求过多，请缩短文本内容或分段处理';
-                } else if (err.message.includes('频率限制') || err.message.includes('429')) {
-                    error.textContent = '错误: 请求过于频繁，请稍后再试';
-                } else if (err.message.includes('分块数量') && err.message.includes('超过限制')) {
-                    error.textContent = '错误: ' + err.message;
-                } else {
-                    error.textContent = '错误: ' + err.message;
-                }
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<span>🎙️</span><span>开始生成语音</span>';
-            }
-        });
+  // Token config
+  var tokenRadios=document.querySelectorAll('input[name="tokenOption"]'),tokenInput=document.getElementById('tokenInput');
+  tokenRadios.forEach(function(r){r.addEventListener('change',function(){tokenInput.style.display=this.value==='custom'?'block':'none'})});
 
-        // 初始化模式切换器
-        function initializeModeSwitcher() {
-            const ttsMode = document.getElementById('ttsMode');
-            const transcriptionMode = document.getElementById('transcriptionMode');
-            const mainContent = document.querySelector('.main-content');
-            const transcriptionContainer = document.getElementById('transcriptionContainer');
+  // TTS form submit
+  document.getElementById('ttsForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var voice=document.getElementById('voice').value;
+    var speed=document.getElementById('speed').value;
+    var pitch=document.getElementById('pitch').value;
+    var style=document.getElementById('style').value;
+    var btn=document.getElementById('generateBtn');
+    var box=document.getElementById('result');
+    var loading=document.getElementById('loading');
+    var success=document.getElementById('success');
+    var error=document.getElementById('error');
+    var apiKey=document.getElementById('serviceApiKey').value;
 
-            ttsMode.addEventListener('click', function() {
-                switchMode('tts');
-            });
+    if(!selectedFile){
+      var text=document.getElementById('text').value;
+      if(!text.trim()){alert('\\u8BF7\\u8F93\\u5165\\u8981\\u8F6C\\u6362\\u7684\\u6587\\u672C\\u5185\\u5BB9');return}
+    }
 
-            transcriptionMode.addEventListener('click', function() {
-                switchMode('transcription');
-            });
-        }
+    box.style.display='block';loading.style.display='block';success.style.display='none';error.style.display='none';
+    btn.disabled=true;btn.textContent='\\u751F\\u6210\\u4E2D...';
 
-        // 切换功能模式
-        function switchMode(mode) {
-            const ttsMode = document.getElementById('ttsMode');
-            const transcriptionMode = document.getElementById('transcriptionMode');
-            const mainContent = document.querySelector('.main-content');
-            const transcriptionContainer = document.getElementById('transcriptionContainer');
-            currentMode = mode;
+    try {
+      var resp;
+      var lt=document.getElementById('loadingText'),pi=document.getElementById('progressInfo');
 
-            if (mode === 'tts') {
-                // 切换到TTS模式
-                ttsMode.classList.add('active');
-                transcriptionMode.classList.remove('active');
-                mainContent.style.display = 'block';
-                transcriptionContainer.style.display = 'none';
-            } else {
-                // 切换到语音转录模式
-                transcriptionMode.classList.add('active');
-                ttsMode.classList.remove('active');
-                mainContent.style.display = 'none';
-                transcriptionContainer.style.display = 'block';
-            }
-        }
+      if(selectedFile){
+        lt.textContent='\\u6B63\\u5728\\u5904\\u7406\\u4E0A\\u4F20\\u7684\\u6587\\u4EF6...';
+        pi.textContent=selectedFile.name+' ('+formatFileSize(selectedFile.size)+')';
+        var fd=new FormData();fd.append('file',selectedFile);fd.append('voice',voice);fd.append('speed',speed);fd.append('pitch',pitch);fd.append('style',style);
+        resp=await fetch('/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd});
+      } else {
+        var text=document.getElementById('text').value;
+        lt.textContent=text.length>3000?'\\u6B63\\u5728\\u5904\\u7406\\u957F\\u6587\\u672C\\uFF0C\\u8BF7\\u8010\\u5FC3\\u7B49\\u5F85...':'\\u6B63\\u5728\\u751F\\u6210\\u8BED\\u97F3\\uFF0C\\u8BF7\\u7A0D\\u5019...';
+        pi.textContent=text.length+' \\u5B57\\u7B26';
+        resp=await fetch('/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({input:text,voice:voice,speed:parseFloat(speed),pitch:pitch,style:style})});
+      }
 
-        // 初始化音频上传功能
-        function initializeAudioUpload() {
-            const audioDropZone = document.getElementById('audioDropZone');
-            const audioFileInput = document.getElementById('audioFileInput');
-            const audioFileInfo = document.getElementById('audioFileInfo');
-            const audioFileRemoveBtn = document.getElementById('audioFileRemoveBtn');
+      if(!resp.ok){var ed=await resp.json();throw new Error(ed.error?.message||'\\u751F\\u6210\\u5931\\u8D25')}
+      var blob=await resp.blob();var url=URL.createObjectURL(blob);
+      document.getElementById('audioPlayer').src=url;document.getElementById('downloadBtn').href=url;
+      loading.style.display='none';success.style.display='block';
+    } catch(err){
+      loading.style.display='none';error.style.display='block';
+      error.textContent='\\u9519\\u8BEF: '+err.message;
+    } finally {
+      btn.disabled=false;btn.textContent='\\u5F00\\u59CB\\u751F\\u6210\\u8BED\\u97F3';
+    }
+  });
 
-            // 点击上传区域
-            audioDropZone.addEventListener('click', function() {
-                audioFileInput.click();
-            });
+  // Transcription form submit
+  document.getElementById('transcriptionForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    if(!selectedAudioFile){alert('\\u8BF7\\u9009\\u62E9\\u8981\\u8F6C\\u5F55\\u7684\\u97F3\\u9891\\u6587\\u4EF6');return}
+    var tokenOpt=document.querySelector('input[name="tokenOption"]:checked').value;
+    var customToken=document.getElementById('tokenInput').value;
+    if(tokenOpt==='custom'&&!customToken.trim()){alert('\\u8BF7\\u8F93\\u5165\\u81EA\\u5B9A\\u4E49 Token');return}
+    var apiKey=document.getElementById('serviceApiKey').value;
+    var btn=document.getElementById('transcribeBtn');
+    var box=document.getElementById('transcriptionResult');
+    var loading=document.getElementById('transcriptionLoading');
+    var success=document.getElementById('transcriptionSuccess');
+    var error=document.getElementById('transcriptionError');
 
-            // 文件选择
-            audioFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    handleAudioFileSelect(file);
-                }
-            });
+    box.style.display='block';loading.style.display='block';success.style.display='none';error.style.display='none';
+    btn.disabled=true;btn.textContent='\\u8F6C\\u5F55\\u4E2D...';
+    document.getElementById('transcriptionLoadingText').textContent='\\u6B63\\u5728\\u8F6C\\u5F55\\u97F3\\u9891\\uFF0C\\u8BF7\\u7A0D\\u5019...';
+    document.getElementById('transcriptionProgressInfo').textContent=selectedAudioFile.name+' ('+formatFileSize(selectedAudioFile.size)+')';
 
-            // 拖拽功能
-            audioDropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                audioDropZone.classList.add('dragover');
-            });
+    try{
+      var fd=new FormData();fd.append('file',selectedAudioFile);
+      if(tokenOpt==='custom')fd.append('token',customToken);
+      var resp=await fetch('/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd});
+      if(!resp.ok){var ed=await resp.json();throw new Error(ed.error?.message||'\\u8F6C\\u5F55\\u5931\\u8D25')}
+      var result=await resp.json();
+      document.getElementById('transcriptionText').value=result.text||'';
+      loading.style.display='none';success.style.display='block';
+    }catch(err){
+      loading.style.display='none';error.style.display='block';error.textContent='\\u9519\\u8BEF: '+err.message;
+    }finally{
+      btn.disabled=false;btn.textContent='\\u5F00\\u59CB\\u8BED\\u97F3\\u8F6C\\u5F55';
+    }
+  });
 
-            audioDropZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                audioDropZone.classList.remove('dragover');
-            });
+  // Copy transcription
+  document.getElementById('copyTranscriptionBtn').addEventListener('click',function(){
+    var ta=document.getElementById('transcriptionText');ta.select();document.execCommand('copy');
+    var b=this;var t=b.textContent;b.textContent='\\u5DF2\\u590D\\u5236';setTimeout(function(){b.textContent=t},1500);
+  });
 
-            audioDropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                audioDropZone.classList.remove('dragover');
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    handleAudioFileSelect(file);
-                }
-            });
+  // Edit transcription
+  document.getElementById('editTranscriptionBtn').addEventListener('click',function(){
+    var ta=document.getElementById('transcriptionText');
+    if(ta.readOnly){ta.readOnly=false;ta.focus();this.textContent='\\u4FDD\\u5B58'}else{ta.readOnly=true;this.textContent='\\u7F16\\u8F91'}
+  });
 
-            // 移除文件
-            audioFileRemoveBtn.addEventListener('click', function() {
-                selectedAudioFile = null;
-                audioFileInput.value = '';
-                audioFileInfo.style.display = 'none';
-                audioDropZone.style.display = 'block';
-            });
-        }
-
-        // 处理音频文件选择
-        function handleAudioFileSelect(file) {
-            // 验证文件类型
-            const allowedTypes = [
-                'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/flac', 'audio/aac',
-                'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'
-            ];
-            
-            const isValidType = allowedTypes.some(type => 
-                file.type.includes(type) || 
-                file.name.toLowerCase().match(/\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i)
-            );
-
-            if (!isValidType) {
-                alert('请选择音频格式的文件（mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp）');
-                return;
-            }
-
-            // 验证文件大小（限制为10MB）
-            if (file.size > 10 * 1024 * 1024) {
-                alert('音频文件大小不能超过10MB');
-                return;
-            }
-
-            selectedAudioFile = file;
-            
-            // 显示文件信息
-            document.getElementById('audioFileName').textContent = file.name;
-            document.getElementById('audioFileSize').textContent = formatFileSize(file.size);
-            document.getElementById('audioFileInfo').style.display = 'flex';
-            document.getElementById('audioDropZone').style.display = 'none';
-        }
-
-        // 初始化Token配置
-        function initializeTokenConfig() {
-            const tokenRadios = document.querySelectorAll('input[name="tokenOption"]');
-            const tokenInput = document.getElementById('tokenInput');
-
-            tokenRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'custom') {
-                        tokenInput.style.display = 'block';
-                        tokenInput.required = true;
-                    } else {
-                        tokenInput.style.display = 'none';
-                        tokenInput.required = false;
-                        tokenInput.value = '';
-                    }
-                });
-            });
-        }
-
-        // 处理语音转录表单提交
-        document.getElementById('transcriptionForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const transcribeBtn = document.getElementById('transcribeBtn');
-            const transcriptionResult = document.getElementById('transcriptionResult');
-            const transcriptionLoading = document.getElementById('transcriptionLoading');
-            const transcriptionSuccess = document.getElementById('transcriptionSuccess');
-            const transcriptionError = document.getElementById('transcriptionError');
-            
-            // 验证音频文件
-            if (!selectedAudioFile) {
-                alert('请选择要转录的音频文件');
-                return;
-            }
-            
-            // 获取Token配置
-            const tokenOption = document.querySelector('input[name="tokenOption"]:checked').value;
-            const customToken = document.getElementById('tokenInput').value;
-            
-            if (tokenOption === 'custom' && !customToken.trim()) {
-                alert('请输入自定义Token');
-                return;
-            }
-            
-            // 重置状态
-            transcriptionResult.style.display = 'block';
-            transcriptionLoading.style.display = 'block';
-            transcriptionSuccess.style.display = 'none';
-            transcriptionError.style.display = 'none';
-            transcribeBtn.disabled = true;
-            transcribeBtn.textContent = '转录中...';
-            
-            // 更新加载提示
-            const loadingText = document.getElementById('transcriptionLoadingText');
-            const progressInfo = document.getElementById('transcriptionProgressInfo');
-            loadingText.textContent = '正在转录音频，请稍候...';
-            progressInfo.textContent = '文件: ' + selectedAudioFile.name + ' (' + formatFileSize(selectedAudioFile.size) + ')';
-            
-            try {
-                // 构建FormData
-                const formData = new FormData();
-                formData.append('file', selectedAudioFile);
-                
-                if (tokenOption === 'custom') {
-                    formData.append('token', customToken);
-                }
-                
-                const response = await fetch('/v1/audio/transcriptions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + document.getElementById('serviceApiKey').value
-                    },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || '转录失败');
-                }
-                
-                const result = await response.json();
-                
-                // 显示转录结果
-                document.getElementById('transcriptionText').value = result.text || '';
-                transcriptionLoading.style.display = 'none';
-                transcriptionSuccess.style.display = 'block';
-                
-            } catch (err) {
-                transcriptionLoading.style.display = 'none';
-                transcriptionError.style.display = 'block';
-                transcriptionError.textContent = '错误: ' + err.message;
-            } finally {
-                transcribeBtn.disabled = false;
-                transcribeBtn.innerHTML = '<span>🎧</span><span>开始语音转录</span>';
-            }
-        });
-
-        // 复制转录结果
-        document.getElementById('copyTranscriptionBtn').addEventListener('click', function() {
-            const transcriptionText = document.getElementById('transcriptionText');
-            transcriptionText.select();
-            document.execCommand('copy');
-            
-            // 临时改变按钮文本
-            const originalText = this.innerHTML;
-            this.innerHTML = '<span>✅</span><span>已复制</span>';
-            setTimeout(() => {
-                this.innerHTML = originalText;
-            }, 2000);
-        });
-
-        // 编辑转录结果
-        document.getElementById('editTranscriptionBtn').addEventListener('click', function() {
-            const transcriptionText = document.getElementById('transcriptionText');
-            const isReadonly = transcriptionText.readOnly;
-            
-            if (isReadonly) {
-                transcriptionText.readOnly = false;
-                transcriptionText.focus();
-                this.innerHTML = '<span>💾</span><span>保存编辑</span>';
-            } else {
-                transcriptionText.readOnly = true;
-                this.innerHTML = '<span>✏️</span><span>编辑文本</span>';
-            }
-        });
-
-        // 转为语音功能
-        document.getElementById('useForTtsBtn').addEventListener('click', function() {
-            const transcriptionText = document.getElementById('transcriptionText').value;
-            
-            if (!transcriptionText.trim()) {
-                alert('转录结果为空，无法转换为语音');
-                return;
-            }
-            
-            // 切换到TTS模式
-            switchMode('tts');
-            
-            // 将转录文本填入TTS文本框
-            document.getElementById('text').value = transcriptionText;
-            
-            // 滚动到TTS区域
-            document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // API 指南展开/收起
-        document.getElementById('apiGuideToggle').addEventListener('click', function() {
-            const body = document.getElementById('apiGuideBody');
-            const arrow = document.getElementById('apiGuideArrow');
-            if (body.style.display === 'none') {
-                body.style.display = 'block';
-                arrow.classList.add('open');
-            } else {
-                body.style.display = 'none';
-                arrow.classList.remove('open');
-            }
-        });
-
-        // 复制代码块
-        function copyCode(btn) {
-            const code = btn.parentElement.querySelector('code');
-            const text = code.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const original = btn.textContent;
-                btn.textContent = '已复制';
-                setTimeout(() => { btn.textContent = original; }, 2000);
-            });
-        }
-
-        // 初始化国际化
-        function initializeI18n() {
-            // 检查本地存储中的语言设置
-            const savedLang = localStorage.getItem('open-tts-language');
-            
-            if (savedLang && translations[savedLang]) {
-                currentLanguage = savedLang;
-            } else {
-                // 自动检测浏览器语言
-                currentLanguage = detectLanguage();
-            }
-            
-            // 应用语言设置
-            setLanguage(currentLanguage);
-        }
-
-        // 初始化语言切换器
-        function initializeLanguageSwitcher() {
-            const languageBtn = document.getElementById('languageBtn');
-            const languageDropdown = document.getElementById('languageDropdown');
-
-            // 切换下拉菜单显示/隐藏
-            languageBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                languageDropdown.classList.toggle('show');
-            });
-
-            // 点击页面其他地方时隐藏下拉菜单
-            document.addEventListener('click', function() {
-                languageDropdown.classList.remove('show');
-            });
-
-            // 语言选择
-            document.querySelectorAll('.language-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const selectedLang = this.getAttribute('data-lang');
-                    setLanguage(selectedLang);
-                    languageDropdown.classList.remove('show');
-                });
-            });
-        }
-    </script>
+  // Use for TTS
+  document.getElementById('useForTtsBtn').addEventListener('click',function(){
+    var t=document.getElementById('transcriptionText').value;
+    if(!t.trim()){alert('\\u8F6C\\u5F55\\u7ED3\\u679C\\u4E3A\\u7A7A');return}
+    switchTab('tts');document.getElementById('text').value=t;
+    document.querySelector('.shell').scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
 </body>
 </html>
 `;
