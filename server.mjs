@@ -163,11 +163,16 @@ export function createAppServer(opts = {}) {
       const reqHeaders = new Headers(incoming.headers);
       if (authenticatedKey) reqHeaders.set("x-authenticated-key", authenticatedKey);
 
+      // 客户端断开时触发 abort，让下游能取消长时间任务
+      const clientAbort = new AbortController();
+      incoming.on("close", () => clientAbort.abort());
+
       const request = new Request(url, {
         method,
         headers: reqHeaders,
         body: method !== "GET" && method !== "HEAD" ? bodyBuffer : undefined,
         duplex: "half",
+        signal: clientAbort.signal,
       });
 
       const pending = [];

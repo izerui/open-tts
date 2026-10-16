@@ -494,6 +494,7 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
       </div>
 
       <button type="submit" class="btn btn-blue" id="transcribeBtn">开始语音转录</button>
+      <button type="button" class="btn btn-blue" id="cancelTranscribeBtn" style="display:none;background:#dc2626">取消转录</button>
     </form>
 
     <div id="transcriptionResult" class="result-box">
@@ -771,26 +772,29 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   // Transcription form submit
+  var sttAbortController=null;
   document.getElementById('transcriptionForm').addEventListener('submit', async function(e){
     e.preventDefault();
     if(!selectedAudioFile){alert('\\u8BF7\\u9009\\u62E9\\u8981\\u8F6C\\u5F55\\u7684\\u97F3\\u9891\\u6587\\u4EF6');return}
     var apiKey=document.getElementById('serviceApiKey').value;
     var responseFormat=document.getElementById('sttResponseFormat').value;
     var btn=document.getElementById('transcribeBtn');
+    var cancelBtn=document.getElementById('cancelTranscribeBtn');
     var box=document.getElementById('transcriptionResult');
     var loading=document.getElementById('transcriptionLoading');
     var success=document.getElementById('transcriptionSuccess');
     var error=document.getElementById('transcriptionError');
 
+    sttAbortController=new AbortController();
     box.style.display='block';loading.style.display='block';success.style.display='none';error.style.display='none';
-    btn.disabled=true;btn.textContent='\\u8F6C\\u5F55\\u4E2D...';
+    btn.style.display='none';cancelBtn.style.display='inline-block';
     document.getElementById('transcriptionLoadingText').textContent='\\u6B63\\u5728\\u8F6C\\u5F55\\u97F3\\u9891\\uFF0C\\u8BF7\\u7A0D\\u5019...';
     document.getElementById('transcriptionProgressInfo').textContent=selectedAudioFile.name+' ('+formatFileSize(selectedAudioFile.size)+')';
 
     try{
       var fd=new FormData();fd.append('file',selectedAudioFile);
       fd.append('response_format',responseFormat);
-      var resp=await fetch('/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd});
+      var resp=await fetch('/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd,signal:sttAbortController.signal});
       if(!resp.ok){var ed=await resp.json();throw new Error(ed.error?.message||'\\u8F6C\\u5F55\\u5931\\u8D25')}
       var textFormats=['srt','vtt','text'];
       var resultText;
@@ -799,10 +803,18 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('transcriptionText').value=resultText;
       loading.style.display='none';success.style.display='block';
     }catch(err){
-      loading.style.display='none';error.style.display='block';error.textContent='\\u9519\\u8BEF: '+err.message;
+      loading.style.display='none';
+      if(err.name==='AbortError'){error.style.display='block';error.textContent='\\u8F6C\\u5F55\\u5DF2\\u53D6\\u6D88'}
+      else{error.style.display='block';error.textContent='\\u9519\\u8BEF: '+err.message}
     }finally{
-      btn.disabled=false;btn.textContent='\\u5F00\\u59CB\\u8BED\\u97F3\\u8F6C\\u5F55';
+      sttAbortController=null;
+      btn.style.display='inline-block';cancelBtn.style.display='none';
     }
+  });
+
+  // Cancel transcription
+  document.getElementById('cancelTranscribeBtn').addEventListener('click',function(){
+    if(sttAbortController)sttAbortController.abort();
   });
 
   // Copy transcription
@@ -1595,12 +1607,16 @@ async function handleAudioTranscription(request, env = {}) {
         const temperature = formData.get('temperature');
         if (temperature) apiFormData.append('temperature', temperature);
 
-        // 转发请求到 whisper-server
+        // 转发请求到 whisper-server，客户端断开或超时都会取消
         const targetUrl = `${whisperUrl.replace(/\/+$/, '')}/v1/audio/transcriptions`;
+        const timeoutSignal = AbortSignal.timeout(600_000);
+        const combinedSignal = request.signal
+            ? AbortSignal.any([request.signal, timeoutSignal])
+            : timeoutSignal;
         const apiResponse = await fetch(targetUrl, {
             method: 'POST',
             body: apiFormData,
-            signal: AbortSignal.timeout(600_000)
+            signal: combinedSignal
         });
 
         if (!apiResponse.ok) {
