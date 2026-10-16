@@ -85,9 +85,9 @@ export function createAppServer(opts = {}) {
     ?? [process.env.API_KEY || "sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e"];
   const apiKeys = new Set(apiKeysRaw);
   const corsOrigin = opts.corsOrigin ?? process.env.CORS_ORIGIN ?? "*";
-  const maxBodyBytes = opts.maxBodyBytes ?? 11 * 1024 * 1024;
+  const maxBodyBytes = opts.maxBodyBytes ?? 100 * 1024 * 1024;
   const runtimeEnv = {
-    SILICONFLOW_API_KEY: opts.siliconflowApiKey ?? process.env.SILICONFLOW_API_KEY ?? "",
+    WHISPER_URL: opts.whisperUrl ?? process.env.WHISPER_URL ?? "",
     CORS_ORIGIN: corsOrigin,
   };
 

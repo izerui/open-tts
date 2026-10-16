@@ -4,19 +4,19 @@ Open TTS 是一个轻量、自托管的语音处理服务，提供网页操作�
 
 主要特性：
 
-- 无需 GPU，不在本地运行语音模型
-- 文字转语音和语音转文字
+- 文字转语音（TTS）和语音转文字（STT）
+- 语音转文字通过转发到 whisper.cpp 服务实现，支持带时间戳的输出（SRT/VTT/verbose_json）
 - 中文男声、女声音色
 - 支持 OpenAI 常见音色别名
 - 支持语速、音调、音量和风格参数
 - 支持文本文件和音频文件上传
 - 长文本自动分段和批量合成
 - 中文、英文、日文、韩文、西班牙文、法文、德文和俄文界面
-- API Key 鉴权
+- API Key 鉴权（TTS 和 STT 共用同一套 Key）
 - Docker 镜像（amd64）
 - 健康检查、模型列表和音色列表接口
 
-语音合成依赖 Microsoft 在线语音服务。语音转文字使用 `FunAudioLLM/SenseVoiceSmall`，通过兼容接口调用。运行环境需要访问外网。
+语音合成依赖 Microsoft 在线语音服务。语音转文字需要配合 whisper.cpp 服务使用（通过 `WHISPER_URL` 配置）。
 
 ## 本地运行
 
@@ -64,7 +64,7 @@ sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e
 docker run --rm \
   -p 8787:8787 \
   -e API_KEY=your-api-key \
-  -e SILICONFLOW_API_KEY=your-siliconflow-key \
+  -e WHISPER_URL=http://your-whisper-server:8178 \
   open-tts:latest
 ```
 
@@ -76,7 +76,7 @@ docker run --rm \
 docker run --rm \
   -p 8787:8787 \
   -e API_KEYS=sk-my-private-key,sk-shared-public-key \
-  -e SILICONFLOW_API_KEY=your-siliconflow-key \
+  -e WHISPER_URL=http://your-whisper-server:8178 \
   open-tts:latest
 ```
 
@@ -145,13 +145,13 @@ curl http://127.0.0.1:8787/v1/models \
 
 ## 语音转文字
 
-服务端配置：
+语音转文字需要配合 [whisper.cpp](https://github.com/ggerganov/whisper.cpp) 的 `whisper-server` 使用。通过 `WHISPER_URL` 环境变量指向 whisper-server 的地址：
 
 ```bash
-SILICONFLOW_API_KEY=your-siliconflow-key npm start
+WHISPER_URL=http://127.0.0.1:8178 npm start
 ```
 
-调用：
+调用（返回纯文本 JSON）：
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/transcriptions \
@@ -159,14 +159,33 @@ curl http://127.0.0.1:8787/v1/audio/transcriptions \
   -F "file=@speech.mp3"
 ```
 
-也可以在单次请求中提供自定义 Token：
+带时间戳的 SRT 字幕：
 
 ```bash
 curl http://127.0.0.1:8787/v1/audio/transcriptions \
   -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" \
   -F "file=@speech.mp3" \
-  -F "token=your-siliconflow-key"
+  -F "response_format=srt"
 ```
+
+带时间戳的 JSON（适合程序处理）：
+
+```bash
+curl http://127.0.0.1:8787/v1/audio/transcriptions \
+  -H "Authorization: Bearer sk-c96e08d2c3e20a3e244c51ee69888d0a96400b1a3883aa4e" \
+  -F "file=@speech.mp3" \
+  -F "response_format=verbose_json"
+```
+
+支持的参数：
+
+| 参数 | 说明 |
+|------|------|
+| `file` | 音频文件（必填） |
+| `response_format` | 输出格式：`json`（默认）、`verbose_json`、`srt`、`vtt`、`text` |
+| `language` | 语言代码，如 `zh`、`en`、`ja` |
+| `prompt` | 提示词，帮助模型理解上下文 |
+| `temperature` | 采样温度 |
 
 ## 发布镜像
 
@@ -195,8 +214,8 @@ ghcr.io/<GitHub用户名或组织名>/<仓库名>
 |--------|------|
 | 每 Key TTS 并发 | 每个 API Key 最多同时处理 10 个 TTS 请求，超出返回 `429` |
 | 文本长度 | 单次请求最大 10,000 字符 |
-| 请求体大小 | 最大 11MB，超出返回 `413` |
-| 音频文件 | 语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp |
+| 请求体大小 | 最大 100MB，超出返回 `413` |
+| 音频文件 | 语音转文字最大 100MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp/mp4 |
 | 文本文件 | txt 格式，最大 500KB |
 | 参数范围 | speed 0.5-2.0，pitch -50~50（整数），volume -100~100（整数） |
 | Markdown 清洗 | 自动去除 Markdown 标记（标题、粗体、代码围栏、LaTeX 公式符号等），保留正文内容朗读 |
@@ -207,7 +226,7 @@ ghcr.io/<GitHub用户名或组织名>/<仓库名>
 - 修改 HTTP 服务、鉴权或健康检查：编辑 `server.mjs`。
 - 修改默认 API Key：编辑 `Dockerfile` 中的 `API_KEY`。
 - 配置多 API Key：设置 `API_KEYS` 环境变量（逗号分隔）。
-- 配置默认语音转文字 Token：设置 `SILICONFLOW_API_KEY` 环境变量。
+- 配置语音转文字后端：设置 `WHISPER_URL` 环境变量，指向 whisper-server 地址。
 - 配置 CORS 允许来源：设置 `CORS_ORIGIN` 环境变量，默认 `*`。
 - 检查 JavaScript 语法：运行 `npm run check`。
 - 运行测试：`npm test`。

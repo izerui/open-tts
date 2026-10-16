@@ -154,8 +154,6 @@ select.sel:focus{outline:none;border-color:#3b82f6}
 .progress-text{text-align:center;color:#6b7280;font-size:13px}
 audio{width:100%;margin-bottom:10px}
 .err-msg{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:10px 14px;border-radius:4px;font-size:13px}
-.token-row{display:flex;gap:16px;margin-bottom:10px;font-size:13px}
-.token-row label{display:flex;align-items:center;gap:5px;cursor:pointer;color:#4b5563}
 .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .code-sec{margin-bottom:24px}
 .code-sec h3{font-size:15px;font-weight:600;color:#111827;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f3f4f6}
@@ -178,7 +176,6 @@ audio{width:100%;margin-bottom:10px}
   .panel{padding:16px}
   .grid2{grid-template-columns:1fr}
   .actions{flex-direction:column}
-  .token-row{flex-direction:column;gap:8px}
 }
 </style>
 </head>
@@ -212,7 +209,6 @@ audio{width:100%;margin-bottom:10px}
   <div class="tabs">
     <button class="tab active" data-tab="tts" data-i18n="tab.tts">文字转语音</button>
     <button class="tab" data-tab="stt" data-i18n="tab.stt">语音转文字</button>
-    <button class="tab" data-tab="docs" data-i18n="tab.docs">API 文档</button>
   </div>
 
   <!-- TTS Panel -->
@@ -317,61 +313,26 @@ audio{width:100%;margin-bottom:10px}
       </div>
       <div id="error" class="err-msg" style="display:none"></div>
     </div>
-  </div>
 
-  <!-- STT Panel -->
-  <div class="panel" id="panel-stt">
-    <form id="transcriptionForm">
-      <div style="margin-bottom:14px">
-        <label class="lbl">上传音频文件</label>
-        <div class="drop-zone" id="audioDropZone">
-          <p>拖拽音频文件到此处，或点击选择</p>
-          <p>支持 mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp，最大 10MB</p>
-          <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a,.flac,.aac,.ogg,.webm,.amr,.3gp,audio/*" style="display:none">
-        </div>
-        <div class="file-card" id="audioFileInfo" style="display:none">
-          <div><span class="fname" id="audioFileName"></span><span class="fsize" id="audioFileSize"></span></div>
-          <button type="button" id="audioFileRemoveBtn">✕</button>
-        </div>
-      </div>
+    <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px">
+      <h3 style="font-size:15px;color:#1d4ed8;margin-bottom:12px">📖 TTS API 文档</h3>
 
-      <div style="margin-bottom:14px">
-        <label class="lbl">API Token 配置</label>
-        <div class="token-row">
-          <label><input type="radio" name="tokenOption" value="default" checked> 使用服务端 Token</label>
-          <label><input type="radio" name="tokenOption" value="custom"> 自定义 Token</label>
-        </div>
-        <input type="text" class="inp" id="tokenInput" placeholder="输入您的 API Token" style="display:none;min-height:auto;margin-top:6px">
-      </div>
-
-      <button type="submit" class="btn btn-blue" id="transcribeBtn">开始语音转录</button>
-    </form>
-
-    <div id="transcriptionResult" class="result-box">
-      <div id="transcriptionLoading" style="display:none">
-        <div class="spinner"></div>
-        <p class="progress-text" id="transcriptionLoadingText">正在转录音频，请稍候...</p>
-        <p class="progress-text" id="transcriptionProgressInfo"></p>
-      </div>
-      <div id="transcriptionSuccess" style="display:none">
-        <label class="lbl">转录结果</label>
-        <textarea class="inp" id="transcriptionText" readonly placeholder="转录结果将在这里显示..."></textarea>
-        <div class="actions">
-          <button type="button" class="btn btn-green btn-sm" id="copyTranscriptionBtn">复制</button>
-          <button type="button" class="btn btn-green btn-sm" id="editTranscriptionBtn">编辑</button>
-          <button type="button" class="btn btn-green btn-sm" id="useForTtsBtn">转为语音</button>
-        </div>
-      </div>
-      <div id="transcriptionError" class="err-msg" style="display:none"></div>
+    <div class="code-sec">
+      <h3>cURL</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/speech \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "tts-1",
+    "input": "你好，这是语音合成测试。",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "speed": 1.0
+  }' \
+  --output speech.mp3</code></pre></div>
     </div>
-  </div>
-
-  <!-- API Docs Panel -->
-  <div class="panel" id="panel-docs">
 
     <div class="code-sec">
       <h3>OpenAI SDK (Python)</h3>
-      <p>兼容 OpenAI SDK，可直接用于大模型应用中的语音合成。</p>
       <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>from openai import OpenAI
 
 client = OpenAI(
@@ -409,36 +370,16 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
     </div>
 
     <div class="code-sec">
-      <h3>cURL — 文字转语音</h3>
-      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/speech \
-  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "tts-1",
-    "input": "你好，这是语音合成测试。",
-    "voice": "zh-CN-XiaoxiaoNeural",
-    "speed": 1.0
-  }' \
-  --output speech.mp3</code></pre></div>
-    </div>
-
-    <div class="code-sec">
-      <h3>cURL — 语音转文字</h3>
-      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/transcriptions \
-  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
-  -F "file=@speech.mp3"</code></pre></div>
-    </div>
-
-    <div class="code-sec">
-      <h3>可用接口</h3>
+      <h3>请求参数</h3>
       <table class="api-tbl">
-        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
+        <thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
         <tbody>
-          <tr><td><code>/v1/audio/speech</code></td><td>POST</td><td>文字转语音</td></tr>
-          <tr><td><code>/v1/audio/transcriptions</code></td><td>POST</td><td>语音转文字</td></tr>
-          <tr><td><code>/v1/audio/voices</code></td><td>GET</td><td>查询可用音色</td></tr>
-          <tr><td><code>/v1/models</code></td><td>GET</td><td>查询可用模型</td></tr>
-          <tr><td><code>/healthz</code></td><td>GET</td><td>健康检查（无需鉴权）</td></tr>
+          <tr><td><code>input</code></td><td>string</td><td>—</td><td>要转换的文本（必填）</td></tr>
+          <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
+          <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
+          <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
+          <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量百分比 (-100 到 100)</td></tr>
+          <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
         </tbody>
       </table>
     </div>
@@ -495,16 +436,137 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
     </div>
 
     <div class="code-sec">
-      <h3>TTS 请求参数</h3>
+      <h3>使用限制</h3>
+      <table class="api-tbl">
+        <thead><tr><th>限制项</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>每 Key 并发</td><td>每个 API Key 最多同时处理 10 个 TTS 请求，超出返回 <code>429</code></td></tr>
+          <tr><td>文本长度</td><td>单次请求最大 10,000 字符</td></tr>
+          <tr><td>文本文件</td><td>txt 格式，最大 500KB</td></tr>
+          <tr><td>参数范围</td><td>speed 0.5-2.0，pitch -50~50（整数），volume -100~100（整数）</td></tr>
+          <tr><td>Markdown 清洗</td><td>自动去除 Markdown 标记（标题、粗体、代码围栏、LaTeX 公式符号等），保留正文内容朗读</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-sec">
+      <h3>可用接口</h3>
+      <table class="api-tbl">
+        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>/v1/audio/speech</code></td><td>POST</td><td>文字转语音</td></tr>
+          <tr><td><code>/v1/audio/transcriptions</code></td><td>POST</td><td>语音转文字</td></tr>
+          <tr><td><code>/v1/audio/voices</code></td><td>GET</td><td>查询可用音色</td></tr>
+          <tr><td><code>/v1/models</code></td><td>GET</td><td>查询可用模型</td></tr>
+          <tr><td><code>/healthz</code></td><td>GET</td><td>健康检查（无需鉴权）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- STT Panel -->
+  <div class="panel" id="panel-stt">
+    <form id="transcriptionForm">
+      <div style="margin-bottom:14px">
+        <label class="lbl">上传音频文件</label>
+        <div class="drop-zone" id="audioDropZone">
+          <p>拖拽音频文件到此处，或点击选择</p>
+          <p>支持 mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp、mp4，最大 100MB</p>
+          <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a,.flac,.aac,.ogg,.webm,.amr,.3gp,.mp4,audio/*,video/mp4" style="display:none">
+        </div>
+        <div class="file-card" id="audioFileInfo" style="display:none">
+          <div><span class="fname" id="audioFileName"></span><span class="fsize" id="audioFileSize"></span></div>
+          <button type="button" id="audioFileRemoveBtn">✕</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="lbl">输出格式</label>
+        <select class="inp" id="sttResponseFormat" style="min-height:auto">
+          <option value="json">JSON（纯文本）</option>
+          <option value="verbose_json">JSON（带时间戳）</option>
+          <option value="srt">SRT 字幕</option>
+          <option value="vtt">VTT 字幕</option>
+          <option value="text">纯文本</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-blue" id="transcribeBtn">开始语音转录</button>
+    </form>
+
+    <div id="transcriptionResult" class="result-box">
+      <div id="transcriptionLoading" style="display:none">
+        <div class="spinner"></div>
+        <p class="progress-text" id="transcriptionLoadingText">正在转录音频，请稍候...</p>
+        <p class="progress-text" id="transcriptionProgressInfo"></p>
+      </div>
+      <div id="transcriptionSuccess" style="display:none">
+        <label class="lbl">转录结果</label>
+        <textarea class="inp" id="transcriptionText" readonly placeholder="转录结果将在这里显示..."></textarea>
+        <div class="actions">
+          <button type="button" class="btn btn-green btn-sm" id="copyTranscriptionBtn">复制</button>
+          <button type="button" class="btn btn-green btn-sm" id="editTranscriptionBtn">编辑</button>
+          <button type="button" class="btn btn-green btn-sm" id="useForTtsBtn">转为语音</button>
+        </div>
+      </div>
+      <div id="transcriptionError" class="err-msg" style="display:none"></div>
+    </div>
+
+    <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px">
+      <h3 style="font-size:15px;color:#1d4ed8;margin-bottom:12px">📖 STT API 文档</h3>
+
+    <div class="code-sec">
+      <h3>cURL — 纯文本</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/transcriptions \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -F "file=@speech.mp3"</code></pre></div>
+    </div>
+
+    <div class="code-sec">
+      <h3>cURL — SRT 字幕（带时间戳）</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/transcriptions \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -F "file=@speech.mp3" \
+  -F "response_format=srt"</code></pre></div>
+    </div>
+
+    <div class="code-sec">
+      <h3>cURL — JSON 带时间戳（程序处理）</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>curl <span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1/audio/transcriptions \
+  -H "Authorization: Bearer <span class="hl">your-api-key</span>" \
+  -F "file=@speech.mp3" \
+  -F "response_format=verbose_json"</code></pre></div>
+    </div>
+
+    <div class="code-sec">
+      <h3>OpenAI SDK (Python)</h3>
+      <div class="code-wrap"><button type="button" class="copy-btn" onclick="copyCode(this)">复制</button><pre><code>from openai import OpenAI
+
+client = OpenAI(
+    api_key="<span class="hl">your-api-key</span>",
+    base_url="<span class="hl auto-base-url">http://127.0.0.1:8787</span>/v1",
+)
+
+result = client.audio.transcriptions.create(
+    model="whisper-1",
+    file=open("speech.mp3", "rb"),
+    response_format="srt",   # json / verbose_json / srt / vtt / text
+)
+print(result)</code></pre></div>
+    </div>
+
+    <div class="code-sec">
+      <h3>请求参数</h3>
       <table class="api-tbl">
         <thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
         <tbody>
-          <tr><td><code>input</code></td><td>string</td><td>—</td><td>要转换的文本（必填）</td></tr>
-          <tr><td><code>voice</code></td><td>string</td><td>XiaoxiaoNeural</td><td>语音名称或别名</td></tr>
-          <tr><td><code>speed</code></td><td>number</td><td>1.0</td><td>语速 (0.5 - 2.0)</td></tr>
-          <tr><td><code>pitch</code></td><td>string</td><td>"0"</td><td>音调 (-50 到 50)</td></tr>
-          <tr><td><code>volume</code></td><td>string</td><td>"0"</td><td>音量百分比 (-100 到 100)</td></tr>
-          <tr><td><code>style</code></td><td>string</td><td>"general"</td><td>语音风格</td></tr>
+          <tr><td><code>file</code></td><td>file</td><td>—</td><td>音频文件（必填）</td></tr>
+          <tr><td><code>response_format</code></td><td>string</td><td>json</td><td>输出格式：json / verbose_json / srt / vtt / text</td></tr>
+          <tr><td><code>language</code></td><td>string</td><td>zh</td><td>语言代码，如 zh、en、ja</td></tr>
+          <tr><td><code>prompt</code></td><td>string</td><td>—</td><td>提示词，帮助模型理解上下文</td></tr>
+          <tr><td><code>temperature</code></td><td>number</td><td>0</td><td>采样温度</td></tr>
         </tbody>
       </table>
     </div>
@@ -514,17 +576,16 @@ fs.writeFileSync("speech.mp3", buffer);</code></pre></div>
       <table class="api-tbl">
         <thead><tr><th>限制项</th><th>说明</th></tr></thead>
         <tbody>
-          <tr><td>每 Key TTS 并发</td><td>每个 API Key 最多同时处理 10 个 TTS 请求，超出返回 <code>429</code></td></tr>
-          <tr><td>文本长度</td><td>单次请求最大 10,000 字符</td></tr>
-          <tr><td>请求体大小</td><td>最大 11MB，超出返回 <code>413</code></td></tr>
-          <tr><td>音频文件</td><td>语音转文字最大 10MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp</td></tr>
-          <tr><td>文本文件</td><td>txt 格式，最大 500KB</td></tr>
-          <tr><td>Markdown 清洗</td><td>自动去除 Markdown 标记（标题、粗体、代码围栏、LaTeX 公式符号等），保留正文内容朗读</td></tr>
+          <tr><td>音频文件</td><td>最大 100MB，支持 mp3/wav/m4a/flac/aac/ogg/webm/amr/3gp/mp4</td></tr>
+          <tr><td>处理时间</td><td>取决于音频时长和服务器算力，长音频可能需要数分钟</td></tr>
+          <tr><td>并发</td><td>whisper-server 串行处理，同时请求会排队</td></tr>
         </tbody>
       </table>
     </div>
 
+    </div>
   </div>
+
 </div>
 
 <script>
@@ -649,19 +710,15 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('audioFileRemoveBtn').addEventListener('click',function(){selectedAudioFile=null;afi.value='';afinfo.style.display='none';adz.style.display='block'});
 
   function pickAudio(f){
-    var ok=['audio/mpeg','audio/mp3','audio/wav','audio/m4a','audio/flac','audio/aac','audio/ogg','audio/webm','audio/amr','audio/3gpp'];
-    var valid=ok.some(function(t){return f.type.includes(t)})||/\\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i.test(f.name);
+    var ok=['audio/mpeg','audio/mp3','audio/wav','audio/m4a','audio/flac','audio/aac','audio/ogg','audio/webm','audio/amr','audio/3gpp','video/mp4'];
+    var valid=ok.some(function(t){return f.type.includes(t)})||/\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp|mp4)$/i.test(f.name);
     if(!valid){alert('\\u8BF7\\u9009\\u62E9\\u97F3\\u9891\\u683C\\u5F0F\\u7684\\u6587\\u4EF6');return}
-    if(f.size>10*1024*1024){alert('\\u97F3\\u9891\\u6587\\u4EF6\\u5927\\u5C0F\\u4E0D\\u80FD\\u8D85\\u8FC7 10MB');return}
+    if(f.size>100*1024*1024){alert('\\u97F3\\u9891\\u6587\\u4EF6\\u5927\\u5C0F\\u4E0D\\u80FD\\u8D85\\u8FC7 100MB');return}
     selectedAudioFile=f;
     document.getElementById('audioFileName').textContent=f.name;
     document.getElementById('audioFileSize').textContent=formatFileSize(f.size);
     afinfo.style.display='flex';adz.style.display='none';
   }
-
-  // Token config
-  var tokenRadios=document.querySelectorAll('input[name="tokenOption"]'),tokenInput=document.getElementById('tokenInput');
-  tokenRadios.forEach(function(r){r.addEventListener('change',function(){tokenInput.style.display=this.value==='custom'?'block':'none'})});
 
   // TTS form submit
   document.getElementById('ttsForm').addEventListener('submit', async function(e){
@@ -717,10 +774,8 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('transcriptionForm').addEventListener('submit', async function(e){
     e.preventDefault();
     if(!selectedAudioFile){alert('\\u8BF7\\u9009\\u62E9\\u8981\\u8F6C\\u5F55\\u7684\\u97F3\\u9891\\u6587\\u4EF6');return}
-    var tokenOpt=document.querySelector('input[name="tokenOption"]:checked').value;
-    var customToken=document.getElementById('tokenInput').value;
-    if(tokenOpt==='custom'&&!customToken.trim()){alert('\\u8BF7\\u8F93\\u5165\\u81EA\\u5B9A\\u4E49 Token');return}
     var apiKey=document.getElementById('serviceApiKey').value;
+    var responseFormat=document.getElementById('sttResponseFormat').value;
     var btn=document.getElementById('transcribeBtn');
     var box=document.getElementById('transcriptionResult');
     var loading=document.getElementById('transcriptionLoading');
@@ -734,11 +789,14 @@ document.addEventListener('DOMContentLoaded', function(){
 
     try{
       var fd=new FormData();fd.append('file',selectedAudioFile);
-      if(tokenOpt==='custom')fd.append('token',customToken);
+      fd.append('response_format',responseFormat);
       var resp=await fetch('/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd});
       if(!resp.ok){var ed=await resp.json();throw new Error(ed.error?.message||'\\u8F6C\\u5F55\\u5931\\u8D25')}
-      var result=await resp.json();
-      document.getElementById('transcriptionText').value=result.text||'';
+      var textFormats=['srt','vtt','text'];
+      var resultText;
+      if(textFormats.includes(responseFormat)){resultText=await resp.text()}
+      else{var result=await resp.json();resultText=responseFormat==='verbose_json'?JSON.stringify(result,null,2):(result.text||'')}
+      document.getElementById('transcriptionText').value=resultText;
       loading.style.display='none';success.style.display='block';
     }catch(err){
       loading.style.display='none';error.style.display='block';error.textContent='\\u9519\\u8BEF: '+err.message;
@@ -1484,124 +1542,76 @@ async function handleAudioTranscription(request, env = {}) {
         }
 
         const contentType = request.headers.get("content-type") || "";
-        
+
         // 验证Content-Type
         if (!contentType.includes("multipart/form-data")) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "请求必须使用multipart/form-data格式",
-                    type: "invalid_request_error",
-                    param: "content-type",
-                    code: "invalid_content_type"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+            return errorResponse(400, "invalid_content_type", "请求必须使用multipart/form-data格式");
         }
 
         // 解析FormData
         const formData = await request.formData();
         const audioFile = formData.get('file');
-        const customToken = formData.get('token');
 
         if (!audioFile || typeof audioFile === "string" || typeof audioFile.arrayBuffer !== "function") {
             return errorResponse(400, "missing_file", "file 字段必须为上传的音频文件");
         }
 
-        if (audioFile.size > 10 * 1024 * 1024) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "音频文件大小不能超过10MB",
-                    type: "invalid_request_error",
-                    param: "file",
-                    code: "file_too_large"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+        if (audioFile.size > 100 * 1024 * 1024) {
+            return errorResponse(400, "file_too_large", "音频文件大小不能超过100MB");
         }
 
         // 验证音频文件格式
-        const allowedTypes = [
-            'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/flac', 'audio/aac',
-            'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'
-        ];
-        
         const fileType = audioFile.type || "";
         const fileName = audioFile.name || "";
-        const isValidType = allowedTypes.some(type => fileType.includes(type)) ||
-            /\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp)$/i.test(fileName);
+        const isValidType = /\.(mp3|wav|m4a|flac|aac|ogg|webm|amr|3gp|mp4|mpeg|mpga)$/i.test(fileName)
+            || /audio\//.test(fileType)
+            || /video\/mp4/.test(fileType);
 
         if (!isValidType) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "不支持的音频文件格式，请上传mp3、wav、m4a、flac、aac、ogg、webm、amr或3gp格式的文件",
-                    type: "invalid_request_error",
-                    param: "file",
-                    code: "invalid_file_type"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+            return errorResponse(400, "invalid_file_type",
+                "不支持的音频文件格式，请上传 mp3、wav、m4a、flac、aac、ogg、webm、amr、3gp 或 mp4 格式的文件");
         }
 
-        const token = customToken || env.SILICONFLOW_API_KEY;
-        if (!token) {
-            return new Response(JSON.stringify({
-                error: {
-                    message: "未配置语音转录Token，请设置SILICONFLOW_API_KEY或在请求中提供token",
-                    type: "invalid_request_error",
-                    param: "token",
-                    code: "missing_api_key"
-                }
-            }), {
-                status: 400,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...makeCORSHeaders()
-                }
-            });
+        // 检查 whisper-server 是否已配置
+        const whisperUrl = env.WHISPER_URL;
+        if (!whisperUrl) {
+            return errorResponse(503, "stt_not_configured", "语音转文字服务未配置，请设置 WHISPER_URL 环境变量");
         }
 
-        // 构建发送到硅基流动API的FormData
+        // 构建转发给 whisper-server 的 FormData，透传所有 OpenAI 兼容参数
         const apiFormData = new FormData();
         apiFormData.append('file', audioFile);
-        apiFormData.append('model', 'FunAudioLLM/SenseVoiceSmall');
 
-        // 发送请求到硅基流动API
-        const apiResponse = await fetch('https://api.siliconflow.cn/v1/audio/transcriptions', {
+        // 透传可选参数
+        const responseFormat = formData.get('response_format');
+        if (responseFormat) apiFormData.append('response_format', responseFormat);
+
+        const language = formData.get('language');
+        if (language) apiFormData.append('language', language);
+
+        const prompt = formData.get('prompt');
+        if (prompt) apiFormData.append('prompt', prompt);
+
+        const temperature = formData.get('temperature');
+        if (temperature) apiFormData.append('temperature', temperature);
+
+        // 转发请求到 whisper-server
+        const targetUrl = `${whisperUrl.replace(/\/+$/, '')}/v1/audio/transcriptions`;
+        const apiResponse = await fetch(targetUrl, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
             body: apiFormData,
-            signal: AbortSignal.timeout(60_000)
+            signal: AbortSignal.timeout(600_000)
         });
 
         if (!apiResponse.ok) {
             const errorText = await apiResponse.text();
-            console.error('硅基流动API错误:', apiResponse.status, errorText);
-            
+            console.error('whisper-server 错误:', apiResponse.status, errorText);
+
             let errorMessage = '语音转录服务暂时不可用';
-            
-            if (apiResponse.status === 401) {
-                errorMessage = 'API Token无效，请检查您的配置';
-            } else if (apiResponse.status === 429) {
-                errorMessage = '请求过于频繁，请稍后再试';
+            if (apiResponse.status === 429) {
+                errorMessage = '转录服务繁忙，请稍后再试';
             } else if (apiResponse.status === 413) {
-                errorMessage = '音频文件太大，请选择较小的文件';
+                errorMessage = '音频文件太大';
             }
 
             return new Response(JSON.stringify({
@@ -1620,13 +1630,15 @@ async function handleAudioTranscription(request, env = {}) {
             });
         }
 
-        // 获取转录结果
-        const transcriptionResult = await apiResponse.json();
+        // 根据 response_format 返回对应的 Content-Type
+        const textFormats = ['srt', 'vtt', 'text'];
+        const isTextFormat = textFormats.includes(responseFormat);
+        const resultContentType = isTextFormat ? "text/plain; charset=utf-8" : "application/json";
 
-        // 返回转录结果
-        return new Response(JSON.stringify(transcriptionResult), {
+        const resultBody = await apiResponse.text();
+        return new Response(resultBody, {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": resultContentType,
                 ...makeCORSHeaders()
             }
         });
