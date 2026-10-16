@@ -649,9 +649,13 @@ function copyCode(btn){var code=btn.parentElement.querySelector('code');navigato
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-tab')===name)});
   document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+name)});
+  history.replaceState(null,'','#'+name);
 }
 
 document.addEventListener('DOMContentLoaded', function(){
+  // 根据 URL hash 定位 Tab
+  var hash=location.hash.replace('#','');
+  if(hash==='tts'||hash==='stt')switchTab(hash);
   // i18n
   var saved=localStorage.getItem('open-tts-language');
   currentLanguage=(saved&&translations[saved])?saved:detectLanguage();
